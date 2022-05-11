@@ -8,7 +8,7 @@ const validateRestaurantInput = require("../validator/restaurant");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 
-// Route    POST api/restaurant/
+// Route    POST api/restaurant/:tripId
 // Desc     Create a restaurant for a trip
 // Access   Private
 Router.post(
@@ -85,7 +85,7 @@ Router.post(
     }
 )
 
-// Route    GET api/restaurant/
+// Route    GET api/restaurant/:tripId/:restaurantId
 // Desc     Retrieve information about a restaurant of a trip
 // Access   Private
 Router.get(
@@ -109,7 +109,7 @@ Router.get(
     }
 )
 
-// Route    GET api/restaurant
+// Route    GET api/restaurant/:tripId
 // Desc     Retrieve all of the trip's restaurants
 // Access   Private
 Router.get(
@@ -136,7 +136,7 @@ Router.get(
     }
 )
 
-// Route    PUT api/restaurant
+// Route    PUT api/restaurant/:tripId/:restaurantId
 // Desc     Update a restaurant
 // Access   Private
 Router.put(
@@ -199,7 +199,7 @@ Router.put(
     }
 )
 
-// Route    DELETE api/restaurant
+// Route    DELETE api/restaurant/:tripId/:restaurantId
 // Desc     Remove a restaurant
 // Access   Private
 Router.delete(

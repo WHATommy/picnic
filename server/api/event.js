@@ -8,7 +8,7 @@ const validateEventInput = require("../validator/event");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 
-// Route    POST api/event/
+// Route    POST api/event/:tripId
 // Desc     Create a event for a trip
 // Access   Private
 Router.post(
@@ -82,7 +82,7 @@ Router.post(
     }
 )
 
-// Route    GET api/event/
+// Route    GET api/event/:tripId/:eventId
 // Desc     Retrieve information about a event of a trip
 // Access   Privates
 Router.get(
@@ -106,7 +106,7 @@ Router.get(
     }
 )
 
-// Route    GET api/event
+// Route    GET api/event/:tripId
 // Desc     Retrieve all of the trip's events
 // Access   Private
 Router.get(
@@ -133,7 +133,7 @@ Router.get(
     }
 )
 
-// Route    PUT api/event
+// Route    PUT api/event/:tripId/:eventId
 // Desc     Update a event
 // Access   Private
 Router.put(
@@ -201,7 +201,7 @@ Router.put(
     }
 )
 
-// Route    DELETE api/event
+// Route    DELETE api/event/:tripId/:eventId
 // Desc     Remove a event
 // Access   Private
 Router.delete(

@@ -119,7 +119,7 @@ Router.get(
 )
 
 // Route    GET api/trip/:tripId/cost
-// Desc     Retrieve a trip's information
+// Desc     Update a trip's total cost
 // Access   Private
 Router.put(
     "/:tripId/cost",
@@ -164,7 +164,7 @@ Router.put(
     }
 )
 
-// Route    PUT api/trip
+// Route    PUT api/trip/:tripId
 // Desc     Update a trip's information
 // Access   Private
 Router.put(
@@ -220,7 +220,7 @@ Router.put(
     }
 )
 
-// Route    PUT api/trip
+// Route    PUT api/trip/:tripId/:userId
 // Desc     Update a trip's moderator
 // Access   Private
 Router.put(
@@ -266,7 +266,7 @@ Router.put(
 )
 
 
-// Route    DELETE api/trip
+// Route    DELETE api/trip/:tripId
 // Desc     Delete a trip
 // Access   Private
 Router.delete(

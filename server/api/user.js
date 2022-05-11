@@ -131,7 +131,7 @@ Router.put(
     }
 )
 
-// Route    PUT api/user/
+// Route    PUT api/user/:userId
 // Desc     Update a user
 // Access   Private
 Router.put(

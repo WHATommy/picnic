@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const validateLoginInput = require("../validator/login");
 
+// Route    POST api/auth
+// Desc     Validate user's credentials, give a token if valid
+// Access   Public
 Router.post(
     "/",
     async (req, res) => {

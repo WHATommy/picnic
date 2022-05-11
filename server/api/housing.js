@@ -8,7 +8,7 @@ const validateHousingInput = require("../validator/housing");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 
-// Route    POST api/housing/
+// Route    POST api/housing/:tripId
 // Desc     Create a housing for a trip
 // Access   Private
 Router.post(
@@ -81,7 +81,7 @@ Router.post(
     }
 )
 
-// Route    GET api/housing/
+// Route    GET api/housing/:tripId/:housingId
 // Desc     Retrieve information about a housing of a trip
 // Access   Private
 Router.get(
@@ -105,7 +105,7 @@ Router.get(
     }
 )
 
-// Route    GET api/housing
+// Route    GET api/housing/:tripId
 // Desc     Retrieve all of the trip's housings
 // Access   Private
 Router.get(
@@ -132,7 +132,7 @@ Router.get(
     }
 )
 
-// Route    PUT api/housing
+// Route    PUT api/housing/:tripId/:housingId
 // Desc     Update a housing
 // Access   Private
 Router.put(
@@ -195,7 +195,7 @@ Router.put(
     }
 )
 
-// Route    DELETE api/housing
+// Route    DELETE api/housing/:tripId/:housingId
 // Desc     Remove a housing
 // Access   Private
 Router.delete(
