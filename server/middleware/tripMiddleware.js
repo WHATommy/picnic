@@ -1,0 +1,123 @@
+const Trip = require("../models/TripModel");
+const Event = require("../models/EventModel");
+const Restaurant = require("../models/RestaurantModel");
+const Housing = require("../models/HousingModel")
+
+const isOwner = async (req, res, next) => {
+    const {
+        tripId
+    } = req.params;
+    try {
+        // Find the trip in the database by ID
+        const trip = await Trip.findById(tripId);
+        if(!trip) {
+            return res.status(401).json({ error: "Trip does not exist" });
+        }
+        
+        // Check if the user is the owner of the trip
+        if(trip.owner.valueOf() !== req.user) {
+            return res.status(401).json({ error: "Access denied" });
+        } 
+
+        next();
+    } catch (err) {
+        console.log(err)
+        return res.status(500).send("Server error");
+    }
+}
+
+const isModerator = async (req, res, next) => {
+    const {
+        tripId
+    } = req.params;
+
+    try {
+        // Find the trip in the database by ID
+        const trip = await Trip.findById(tripId);
+        if(!trip) {
+            return res.status(401).json({ error: "Trip does not exist" });
+        }
+
+        // Check if the user is a attendee and a moderator for the trip
+        const isMod = trip.attendees.some(attendeeId => {
+            attendeeId === req.user.valueOf() && attendeeId.moderator === true;
+        });
+
+        if(!isMod) {
+            return res.status(401).json({ error: "Access denied" });
+        };
+
+        next();
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send("Server error");
+    }
+}
+
+const isPoster = async (req, res, next) => {
+    const {
+        eventId,
+        restaurantId,
+        housingId
+    } = req.params;
+    try {
+        // Check if the user is the original poster for the event, restaurant, or housing item
+        switch(req.baseUrl) {
+            case "/api/event":
+                const event = await Event.findById(eventId);
+                if (event.poster == req.user) {
+                    return next();
+                }
+                break;
+            case "/api/restaurant":
+                const restaurant = await Restaurant.findById(restaurantId);
+                if (restaurant.poster == req.user) {
+                    return next();
+                }
+                break;
+            case "/api/housing":
+                const housing = await Housing.findById(housingId);
+                if (housing.poster == req.user) {
+                    return next();
+                }
+                break;
+            default:
+                break;
+        }
+        return res.status(401).json({ error: "Access denied" });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send("Server error");
+    }
+}
+
+const isAttendee = async (req, res, next) => {
+    const {
+        tripId
+    } = req.params;
+
+    try {
+        // Find the trip in the database by ID
+        const trip = await Trip.findById(tripId);
+        if(!trip) {
+            return res.status(401).json({ error: "Trip does not exist" });
+        }
+
+        // Check if the user is a attendee and a moderator for the trip
+        const isAttending = trip.attendees.some(attendeeId => {
+            attendeeId === req.user.valueOf()
+        });
+
+        if(!isAttending) {
+            return res.status(401).json({ error: "Access denied" });
+        };
+
+        next();
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send("Server error");
+    }
+}
+
+const tripMiddleware = { isOwner, isModerator, isPoster, isAttendee };
+module.exports = tripMiddleware;

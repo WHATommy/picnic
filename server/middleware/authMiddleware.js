@@ -6,7 +6,7 @@ module.exports = function (req, res, next) {
 
     // Check if token exist
     if (!token) {
-        return res.status(401).json({ msg: "Access denied" });
+        return res.status(401).json({ error: "Access denied" });
     }
 
     // Verify the token
@@ -14,11 +14,11 @@ module.exports = function (req, res, next) {
         const jwtSecret = require("../config/keys").secretOrKey;
         jwt.verify(token, jwtSecret, (error, decoded) => {
         if (error) {
-            return res.status(401).json({ msg: "Invalid token" });
+            return res.status(401).json({ error: "Invalid token" });
         } else {
             // Check if the request user has been edited
             if(req.user) {
-                return res.status(401).json({ msg: "Access denied" });
+                return res.status(401).json({ error: "Access denied" });
             }
             req.user = decoded.userId;
             next();

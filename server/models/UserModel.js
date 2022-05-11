@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
+    // TODO: add default pointing to a default image
+    image: {
+        type: String
+    },
     username: {
         type: String,
         required: true

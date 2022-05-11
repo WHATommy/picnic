@@ -88,7 +88,7 @@ Router.put(
 
 
 // Route    PUT api/user/
-// Desc     Update a user
+// Desc     Update current user
 // Access   Private
 Router.put(
     "/",
@@ -106,6 +106,53 @@ Router.put(
             let user;
             // Retrieve a user by ID
             user = await User.findById(req.user);
+
+            // Check if user exist in the database
+            if (!user) {
+                return res.status(404).send("User does not exist");
+            }
+
+            // Update the user structure
+            username ? user.username = username : null;
+            email ? user.email = email : null;
+            trips ? user.trips = trips : null;
+            invitations ? user.invitations = invitations : null;
+
+            // Save the user
+            await user.save();
+
+            return res.status(200).json(user);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+        
+    }
+)
+
+// Route    PUT api/user/
+// Desc     Update a user
+// Access   Private
+Router.put(
+    "/:userId",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            userId
+        } = req.params;
+        const {
+            username,
+            email,
+            trips,
+            invitations
+        } = req.body;
+
+        try {
+            let user;
+            // Retrieve a user by ID
+            user = await User.findById(userId);
 
             // Check if user exist in the database
             if (!user) {
