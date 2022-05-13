@@ -193,6 +193,14 @@ Router.delete(
                 return res.status(404).send("User does not exist");
             }
 
+            // Filter out the targeted user id out of the trip's list of attendees and pending users
+            await user.trips.map(async tripId => {
+                const trip = await axios.get((`${baseUrl}/trip/${tripId}`, {}, { headers: { "token": req.header("token") } }));
+                const attendees = await trip.attendees.filter(userId => user._id.valueOf() !== userId.valueOf());
+                const pendingUsers = await trip.pendingUsers.filter(userId => user._id.valueOf() !== userId.valueOf());
+                await axios.put(`${baseUrl}/trip/${tripId}`, { attendees, pendingUsers }, { headers: { "token": req.header("token") } });
+            })
+            
             await user.remove(); 
 
             return res.status(200).send("User has been removed");

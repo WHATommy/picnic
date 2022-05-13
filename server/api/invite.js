@@ -6,7 +6,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 const tripMiddleware = require("../middleware/tripMiddleware");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
-const trip = require("../validator/trip");
 
 // Route    PUT invite/:tripId/:userId/invite
 // Desc     Add a user into the trip's pending user, add the invitation to the targeted user's invitation list
@@ -41,7 +40,7 @@ Router.put(
             }
             isAttendee = trip.pendingUsers.find(pendingUser => pendingUser._id.valueOf() === user._id.valueOf());
             if(isAttendee) {
-                return res.status(400).send("User is already attending this trip");
+                return res.status(400).send("User has already been invited");
             }
             isAttendee = trip.owner === user._id.valueOf();
             if(isAttendee) {
@@ -97,11 +96,12 @@ Router.put(
             // Filter out the targeted user id in the trip's list of pending users and add the user id into the list of attendees
             const pendingUsers = trip.pendingUsers.filter(user => user._id.valueOf() !== userId.valueOf());
             trip.attendees.unshift(userId);
+
             await axios.put(`${baseUrl}/trip/${tripId}`, { attendees: trip.attendees, pendingUsers }, { headers: { "token": req.header("token") } });
 
             return res.status(200).send("Accept successful");
         } catch (err) {
-            //console.log(err);
+            console.log(err);
             return res.status(500).send("Server error");
         }
     }

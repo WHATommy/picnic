@@ -118,6 +118,63 @@ Router.get(
     }
 )
 
+// Route    PUT api/trip/:tripId
+// Desc     Update a trip's information
+// Access   Private
+Router.put(
+    "/:tripId",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId
+        } = req.params
+        const {
+            owner,
+            name,
+            location,
+            startDate,
+            endDate,
+            events,
+            restaurants,
+            housings,
+            attendees,
+            pendingUsers
+        } = req.body;
+
+        try {
+            // Find the user inside the database
+            let trip = await Trip.findById(tripId);
+            if(!trip) {
+                return res.status(404).send("The trip does not exist");
+            };
+
+            // Updated trip structure
+            owner ? trip.owner = owner : null
+            name ? trip.name = name : null
+            location ? trip.location = location : null
+            startDate ? trip.startDate = startDate : null
+            endDate ? trip.endDate = endDate : null
+            events ? trip.events = events : null
+            restaurants ? trip.restaurants = restaurants : null
+            housings ? trip.housings = housings : null
+            attendees ? trip.attendees = attendees : null
+            pendingUsers ? trip.pendingUsers = pendingUsers : null
+
+            console.log(trip)
+
+            // Save the trip in the 'trip' collection and the trip id into the user's list of trips
+            await trip.save();
+            
+            return res.status(200).json(trip);
+            
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
 // Route    GET api/trip/:tripId/cost
 // Desc     Update a trip's total cost
 // Access   Private
@@ -159,62 +216,6 @@ Router.put(
             return res.status(200).json(trip);
         } catch (err) {
             console.log(err);
-            return res.status(500).send("Server error");
-        }
-    }
-)
-
-// Route    PUT api/trip/:tripId
-// Desc     Update a trip's information
-// Access   Private
-Router.put(
-    "/:tripId",
-    authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
-    async(req, res) => {
-        // Store request values into callable variables
-        const {
-            tripId
-        } = req.params
-        const {
-            owner,
-            name,
-            location,
-            startDate,
-            endDate,
-            events,
-            restaurants,
-            housings,
-            attendees,
-            pendingUsers
-        } = req.body;
-
-        try {
-            // Find the user inside the database
-            let trip = await Trip.findById(tripId);
-            if(!trip) {
-                return res.status(404).send("The trip does not exist");
-            };
-
-            // Updated trip structure
-            owner ? trip.owner = owner : null
-            name ? trip.name = name : null
-            location ? trip.location = location : null
-            startDate ? trip.startDate = startDate : null
-            endDate ? trip.endDate = endDate : null
-            events ? trip.events = events : null
-            restaurants ? trip.restaurants = restaurants : null
-            housings ? trip.housings = housings : null
-            attendees ? trip.attendees = attendees : null
-            pendingUsers ? trip.pendingUsers = pendingUsers : null
-
-            // Save the trip in the 'trip' collection and the trip id into the user's list of trips
-            await trip.save();
-            
-            return res.status(200).json(trip);
-            
-        } catch (err) {
-            //console.log(err);
             return res.status(500).send("Server error");
         }
     }

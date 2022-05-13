@@ -14,7 +14,7 @@ const baseUrl = require("../util/baseUrl");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateHousingInput(req.body);

@@ -14,7 +14,7 @@ const baseUrl = require("../util/baseUrl");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -150,6 +150,7 @@ Router.put(
         }
         // Store request values into callable variables
         const {
+            tripId,
             eventId
         } = req.params
         const {
