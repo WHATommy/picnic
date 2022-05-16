@@ -161,6 +161,12 @@ Router.put(
                 return res.status(404).send("Event does not exist");
             };
 
+            // Check if attendee is already attending this event
+            let isAttending = event.attendees.find(attendeeId => attendeeId._id.valueOf() === userId)
+            if(isAttending) {
+                return res.status(401).json("Attendee is already in this event")
+            }
+            
             // Update the event attendees
             event.attendees.unshift(userId);
             // Save the event
@@ -239,7 +245,7 @@ Router.put(
             // Check if attendee is already attending this event
             isAttending = attendee.attending.events.find(event => event._id.valueOf() === eventId);
             if(!isAttending) {
-                return res.status(401).json("User is not attending this event")
+                return res.status(401).json("User is not attending this event");
             }
 
             // Remove the event from the attendee attending list

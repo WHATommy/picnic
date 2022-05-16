@@ -49,7 +49,7 @@ Router.get(
         } = req.params;
 
         try {
-            const attendee = await Attendee.find({tripId: tripId, userId: userId});
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
             return res.status(200).json(attendee);
 
         } catch (err) {
@@ -193,13 +193,13 @@ Router.put(
         try {
             
             // Find the attendee in the trip
-            const attendee = Attendee.findOne({tripId: tripId, userId: userId});
+            let attendee = await Attendee.findOne({tripId: tripId, userId: userId});
 
             // Change the moderator status of this attendee
             attendee.moderator = !attendee.moderator
 
             // Save into the attendee collection
-            attendee.save();
+            await attendee.save();
 
             return res.status(200).json(attendee)
             
@@ -215,6 +215,7 @@ Router.put(
 // Access   Public
 Router.delete(
     "/:tripId/:userId",
+    authMiddleware,
     async (req, res) => {
 
         // Store request values into callable variables
@@ -224,9 +225,38 @@ Router.delete(
         } = req.params;
 
         try {
-            const attendee = Attendee.findOne({ tripId: tripId, userId: userId });
 
-            attendee.remove();
+            // Find the attendee in the attendees database
+            const attendee = await Attendee.findOne({ tripId: tripId, userId: userId });
+            if(!attendee) {
+                return res.status(404).json("User is not attending this trip")
+            }
+
+            // Find the trip in the trip database
+            let trip = await Trip.findById(tripId);
+            if(!trip) {
+                return res.status(404).json("Trip does not exist")
+            }
+
+            trip.attendees = trip.attendees.filter(attendeeId => attendeeId._id.valueOf() !== userId);
+            await axios.put(`${baseUrl}/trip/${tripId}`, { attendees: trip.attendees }, { headers: { "token": req.header("token") } });
+
+            // Remove attendee from all events in the trip
+            await attendee.attending.events.forEach(async eventId => {
+                await axios.put(`${baseUrl}/event/${tripId}/${eventId._id.valueOf()}/${userId}/leave`, {}, { headers: { "token": req.header("token") } });
+            });
+
+            // Remove attendee from all housings in the trip
+            await attendee.attending.housings.forEach(async housingId => {
+                await axios.put(`${baseUrl}/housing/${tripId}/${housingId._id.valueOf()}/${userId}/leave`, {}, { headers: { "token": req.header("token") } });
+            });
+
+            // Remove attendee from all restaurants in the trip
+            await attendee.attending.restaurants.forEach(async restaurantId => {
+                await axios.put(`${baseUrl}/restaurant/${tripId}/${restaurantId._id.valueOf()}/${userId}/leave`, {}, { headers: { "token": req.header("token") } });
+            });
+
+            await attendee.remove();
 
             return res.status(200).json("Attendee has been removed");
 

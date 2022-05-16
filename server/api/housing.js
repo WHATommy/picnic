@@ -160,6 +160,12 @@ Router.put(
                 return res.status(404).send("Housing does not exist");
             };
 
+            // Check if attendee is already attending this event
+            let isAttending = housing.attendees.find(attendeeId => attendeeId._id.valueOf() === userId)
+            if(isAttending) {
+                return res.status(401).json("Attendee is already in this housing")
+            }
+
             // Update the housing attendees
             housing.attendees.unshift(userId);
             // Save the housing

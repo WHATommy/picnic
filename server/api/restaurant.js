@@ -164,6 +164,12 @@ Router.put(
                 return res.status(404).send("Restaurant does not exist");
             };
 
+            // Check if attendee is already attending this event
+            let isAttending = restaurant.attendees.find(attendeeId => attendeeId._id.valueOf() === userId)
+            if(isAttending) {
+                return res.status(401).json("Attendee is already in this restaurant")
+            }
+
             // Update the restaurant attendees
             restaurant.attendees.unshift(userId);
             // Save the restaurant
