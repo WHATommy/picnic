@@ -7,6 +7,7 @@ const tripMiddleware = require("../middleware/tripMiddleware");
 const validateHousingInput = require("../validator/housing");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
+const Attendee = require("../models/AttendeeModel");
 
 // Route    POST api/housing/:tripId
 // Desc     Create a housing for a trip
@@ -129,6 +130,128 @@ Router.get(
         const tripHousings = await Housings.find( { _id: { $in: trip.housings } } );
 
         return res.status(200).json(tripHousings);
+    }
+)
+
+// Route    PUT api/housing/:tripId/:eventId/:userId/join
+// Desc     User joins a housing
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/join",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if housing exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a housing by ID
+            let housing = await Housings.findById(eventId);
+            // Check if housing exist in the database
+            if (!housing) {
+                return res.status(404).send("Housing does not exist");
+            };
+
+            // Update the housing attendees
+            housing.attendees.unshift(userId);
+            // Save the housing
+            await housing.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this housing
+            isAttending = attendee.attending.housings.find(housing => housing._id.valueOf() === eventId);
+            if(isAttending) {
+                return res.status(401).json("User is already attending this housing")
+            }
+
+            // Add housing into the attendee's attending list
+            attendee.attending.housings.unshift(eventId);
+
+            // PUT request to attendee api
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+
+            return res.status(200).json(housing);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/housing/:tripId/:eventId/:userId/leave
+// Desc     User leaves a housing
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/leave",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if housing exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a housing by ID
+            let housing = await Housings.findById(eventId);
+            // Check if housing exist in the database
+            if (!housing) {
+                return res.status(404).send("Housing does not exist");
+            };
+
+            // Check if attendee is already attending this housing
+            const user = housing.attendees.find(attendee => attendee._id.valueOf() === userId);
+            if(!user) {
+                return res.status(401).json("User is not attending this housing");
+            }
+
+            // Remove the attendee
+            housing.attendees = housing.attendees.filter(attendee => attendee._id.valueOf() !== userId);
+            // Save the housing
+            await housing.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this housing
+            isAttending = attendee.attending.housings.find(housing => housing._id.valueOf() === eventId);
+            if(!isAttending) {
+                return res.status(401).json("User is not attending this housing")
+            }
+
+            // Remove the housing from the attendee attending list
+            attendee.attending.housings = attendee.attending.housings.filter(housing => housing._id.valueOf() !== eventId);
+
+            // Update the attendee
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+           
+            return res.status(200).json(housing);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
     }
 )
 

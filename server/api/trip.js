@@ -161,8 +161,6 @@ Router.put(
             attendees ? trip.attendees = attendees : null
             pendingUsers ? trip.pendingUsers = pendingUsers : null
 
-            console.log(trip)
-
             // Save the trip in the 'trip' collection and the trip id into the user's list of trips
             await trip.save();
             

@@ -82,6 +82,12 @@ Router.put(
                 return res.status(401).send("User does not exist");
             }
 
+            // Check if there is a invitation with the same id as the trip id
+            isInvited = user.invitations.find(invite => invite._id.valueOf() === tripId)
+            if(isInvited === undefined) {
+                return res.status(401).send("Invitation does not exist");
+            }
+
             // Find the trip in the database
             const trip = await Trip.findById(tripId);
             if (!trip) {
@@ -96,8 +102,10 @@ Router.put(
             // Filter out the targeted user id in the trip's list of pending users and add the user id into the list of attendees
             const pendingUsers = trip.pendingUsers.filter(user => user._id.valueOf() !== userId.valueOf());
             trip.attendees.unshift(userId);
+            console.log(trip.attendees)
 
             await axios.put(`${baseUrl}/trip/${tripId}`, { attendees: trip.attendees, pendingUsers }, { headers: { "token": req.header("token") } });
+            await axios.post(`${baseUrl}/attendee/${tripId}/${userId}`, {}, { headers: { "token": req.header("token") } });
 
             return res.status(200).send("Accept successful");
         } catch (err) {
@@ -125,6 +133,12 @@ Router.put(
             const user = await User.findById(userId);
             if (!user) {
                 return res.status(401).send("User does not exist");
+            }
+
+            // Check if there is a invitation with the same id as the trip id
+            isInvited = user.invitations.find(invite => invite._id.valueOf() === tripId)
+            if(isInvited === undefined) {
+                return res.status(401).send("Invitation does not exist");
             }
 
             // Find the trip in the database

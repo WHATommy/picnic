@@ -14,6 +14,7 @@ const event = require("./api/event");
 const housing = require("./api/housing");
 const restaurant = require("./api/restaurant");
 const invite = require("./api/invite");
+const attendee = require("./api/attendee");
 
 // Routes
 app.use("/signup", signup);
@@ -24,6 +25,7 @@ app.use("/event", event);
 app.use("/housing", housing);
 app.use("/restaurant", restaurant);
 app.use("/invite", invite);
+app.use("/attendee", attendee);
 
 // Connect to mongo database
 const connectDb = require("./util/connectDb");

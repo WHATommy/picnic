@@ -42,29 +42,6 @@ const TripSchema = new Schema({
         {
             _id: {
                 type: Schema.Types.ObjectId
-            },
-            moderator: {
-                type: Boolean,
-                default: false
-            },
-            personalCost: {
-                type: Number,
-                default: 0
-            },
-            personalAddOns: {
-                totalCost: {
-                    type: Number
-                },
-                items: [
-                    {
-                        item: {
-                            type: String
-                        },
-                        cost: {
-                            type: Number
-                        }
-                    }
-                ]
             }
         }
     ],

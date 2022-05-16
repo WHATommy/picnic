@@ -7,6 +7,7 @@ const tripMiddleware = require("../middleware/tripMiddleware");
 const validateRestaurantInput = require("../validator/restaurant");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
+const Attendee = require("../models/AttendeeModel");
 
 // Route    POST api/restaurant/:tripId
 // Desc     Create a restaurant for a trip
@@ -133,6 +134,128 @@ Router.get(
         const tripRestaurants = await Restaurants.find( { _id: { $in: trip.restaurants } } );
 
         return res.status(200).json(tripRestaurants);
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:eventId/:userId/join
+// Desc     User joins a restaurant
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/join",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if restaurant exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(eventId);
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurant does not exist");
+            };
+
+            // Update the restaurant attendees
+            restaurant.attendees.unshift(userId);
+            // Save the restaurant
+            await restaurant.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this restaurant
+            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === eventId);
+            if(isAttending) {
+                return res.status(401).json("User is already attending this restaurant")
+            }
+
+            // Add restaurant into the attendee's attending list
+            attendee.attending.restaurants.unshift(eventId);
+
+            // PUT request to attendee api
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+
+            return res.status(200).json(restaurant);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:eventId/:userId/leave
+// Desc     User leaves a restaurant
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/leave",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if restaurant exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(eventId);
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurant does not exist");
+            };
+
+            // Check if attendee is already attending this restaurant
+            const user = restaurant.attendees.find(attendee => attendee._id.valueOf() === userId);
+            if(!user) {
+                return res.status(401).json("User is not attending this restaurant");
+            }
+
+            // Remove the attendee
+            restaurant.attendees = restaurant.attendees.filter(attendee => attendee._id.valueOf() !== userId);
+            // Save the restaurant
+            await restaurant.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this restaurant
+            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === eventId);
+            if(!isAttending) {
+                return res.status(401).json("User is not attending this restaurant")
+            }
+
+            // Remove the restaurant from the attendee attending list
+            attendee.attending.restaurants = attendee.attending.restaurants.filter(restaurant => restaurant._id.valueOf() !== eventId);
+
+            // Update the attendee
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+           
+            return res.status(200).json(restaurant);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
     }
 )
 

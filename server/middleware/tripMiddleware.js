@@ -28,22 +28,15 @@ const isOwner = async (req, res, next) => {
 
 const isModerator = async (req, res, next) => {
     const {
-        tripId
+        tripId,
+        userId
     } = req.params;
 
     try {
         // Find the trip in the database by ID
-        const trip = await Trip.findById(tripId);
-        if(!trip) {
-            return res.status(401).json({ error: "Trip does not exist" });
-        }
+        const attendee = Attendee.find({tripId: tripId, userId: userId});
 
-        // Check if the user is a attendee and a moderator for the trip
-        const isMod = trip.attendees.some(attendeeId => {
-            attendeeId === req.user.valueOf() && attendeeId.moderator === true;
-        });
-
-        if(!isMod) {
+        if(!attendee.moderator) {
             return res.status(401).json({ error: "Access denied" });
         };
 
@@ -107,6 +100,8 @@ const isAttendee = async (req, res, next) => {
         const isAttending = trip.attendees.some(attendeeId => {
             attendeeId === req.user.valueOf()
         });
+
+        console.log(isAttending)
 
         if(!isAttending) {
             return res.status(401).json({ error: "Access denied" });

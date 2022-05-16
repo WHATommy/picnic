@@ -7,6 +7,7 @@ const tripMiddleware = require("../middleware/tripMiddleware");
 const validateEventInput = require("../validator/event");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
+const Attendee = require("../models/AttendeeModel");
 
 // Route    POST api/event/:tripId
 // Desc     Create a event for a trip
@@ -133,13 +134,135 @@ Router.get(
     }
 )
 
+// Route    PUT api/event/:tripId/:eventId/:userId/join
+// Desc     User joins a event
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/join",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if event exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a event by ID
+            let event = await Events.findById(eventId);
+            // Check if event exist in the database
+            if (!event) {
+                return res.status(404).send("Event does not exist");
+            };
+
+            // Update the event attendees
+            event.attendees.unshift(userId);
+            // Save the event
+            await event.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this event
+            isAttending = attendee.attending.events.find(event => event._id.valueOf() === eventId);
+            if(isAttending) {
+                return res.status(401).json("User is already attending this event")
+            }
+
+            // Add event into the attendee's attending list
+            attendee.attending.events.unshift(eventId);
+
+            // PUT request to attendee api
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+
+            return res.status(200).json(event);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/event/:tripId/:eventId/:userId/leave
+// Desc     User leaves a event
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:userId/leave",
+    authMiddleware,
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId,
+            eventId,
+            userId
+        } = req.params
+
+        try {
+            let trip = await Trip.findById(tripId);
+            // Check if event exist in the database
+            if (!trip) {
+                return res.status(404).send("Trip does not exist");
+            };
+            // Retrieve a event by ID
+            let event = await Events.findById(eventId);
+            // Check if event exist in the database
+            if (!event) {
+                return res.status(404).send("Event does not exist");
+            };
+
+            // Check if attendee is already attending this event
+            const user = event.attendees.find(attendee => attendee._id.valueOf() === userId);
+            if(!user) {
+                return res.status(401).json("User is not attending this event");
+            }
+
+            // Remove the attendee
+            event.attendees = event.attendees.filter(attendee => attendee._id.valueOf() !== userId);
+            // Save the event
+            await event.save();
+
+            // Update the attendee's attending list
+            const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
+            if(!attendee) {
+                return res.status(404).send("Attendee does not exist");
+            }
+
+            // Check if attendee is already attending this event
+            isAttending = attendee.attending.events.find(event => event._id.valueOf() === eventId);
+            if(!isAttending) {
+                return res.status(401).json("User is not attending this event")
+            }
+
+            // Remove the event from the attendee attending list
+            attendee.attending.events = attendee.attending.events.filter(event => event._id.valueOf() !== eventId);
+
+            // Update the attendee
+            await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
+           
+            return res.status(200).json(event);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
 // Route    PUT api/event/:tripId/:eventId
 // Desc     Update a event
 // Access   Private
 Router.put(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     async(req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -191,14 +314,15 @@ Router.put(
             await event.save();
 
             // Update trip's cost
-            await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
+            if(cost) {
+                await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
+            }
 
             return res.status(200).json(event);
         } catch (err) {
             console.log(err);
             return res.status(500).send("Server error");
         }
-        
     }
 )
 
