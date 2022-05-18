@@ -4,12 +4,15 @@ const User = require("../models/UserModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validateRegisterInput = require("../validator/register");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/mutler");
 
 // Route    POST api/signup
 // Desc     Register user into the database
 // Access   Public
 Router.post(
     "/", 
+    upload.single("image"),
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = validateRegisterInput(req.body);
@@ -42,8 +45,18 @@ Router.post(
                 return res.status(401).send([{msg:"Username is already taken"}]);
             };
 
+            let cloudinaryResult;
+            // Upload image to cloudinary
+            if(req.file) {
+                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            }
+
             // User structure
             user = new User({
+                profilePic: cloudinaryResult ? {
+                    image: cloudinaryResult.secure_url,
+                    cloudinaryId: cloudinaryResult.public_id
+                } : null,
                 username: username.toLowerCase(),
                 email: email.toLowerCase(),
                 password,

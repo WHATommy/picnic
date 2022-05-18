@@ -1,7 +1,6 @@
 // Express
 const express = require("express");
 const app = express();
-const server = require("http").createServer(app);   // Conjunction with express.js for websocket
 
 // Body parser 
 app.use(express.json());
@@ -37,6 +36,7 @@ const connectDb = require("./util/connectDb");
 connectDb();
 
 // Web socket
+const server = require("http").createServer(app);   // Conjunction with express.js for websocket
 const io = require("socket.io")(process.env.PORT, {
     cors: {
       origin: ["http://localhost:3000"]

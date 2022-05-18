@@ -6,6 +6,16 @@ const RestaurantSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'trips'
     },
+    images: [
+        {
+            image: {
+                type: String
+            },
+            cloudinaryId: {
+                type: String
+            }
+        }
+    ],
     poster: {
         type: Schema.Types.ObjectId
     },
@@ -38,9 +48,6 @@ const RestaurantSchema = new Schema({
     },
     websiteUrl: {
         type: String
-    },
-    images: {
-        type: Array
     },
     attendees: [
         {

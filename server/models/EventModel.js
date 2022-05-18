@@ -6,9 +6,16 @@ const EventSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'trips'
     },
-    image: {
-        type: String
-    },
+    images: [
+        {
+            image: {
+                type: String
+            },
+            cloudinaryId: {
+                type: String
+            }
+        }
+    ],
     poster: {
         type: Schema.Types.ObjectId
     },

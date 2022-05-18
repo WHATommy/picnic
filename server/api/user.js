@@ -4,6 +4,8 @@ const User = require("../models/UserModel");
 const bcrypt = require("bcryptjs");
 const authMiddleware = require("../middleware/authMiddleware");
 const validatePasswordInput = require("../validator/password");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/mutler");
 
 // Route    GET api/user/
 // Desc     Retrieve information the current user
@@ -93,6 +95,7 @@ Router.put(
 Router.put(
     "/",
     authMiddleware,
+    upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -112,11 +115,58 @@ Router.put(
                 return res.status(404).send("User does not exist");
             }
 
+            let cloudinaryResult = null;
+            // Upload image to cloudinary
+            if(req.file) {
+                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            }
+
             // Update the user structure
+            cloudinaryResult ? user.profilePic = {
+                image: cloudinaryResult.secure_url,
+                cloudinaryId: cloudinaryResult.public_id
+            } : null;
             username ? user.username = username : null;
             email ? user.email = email : null;
             trips ? user.trips = trips : null;
             invitations ? user.invitations = invitations : null;
+
+            // Save the user
+            await user.save();
+
+            return res.status(200).json(user);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+        
+    }
+)
+
+// Route    PUT api/user/
+// Desc     Update current user
+// Access   Private
+Router.put(
+    "/profilePicReset",
+    authMiddleware,
+    async(req, res) => {
+
+        try {
+            let user;
+            // Retrieve a user by ID
+            user = await User.findById(req.user);
+
+            // Check if user exist in the database
+            if (!user) {
+                return res.status(404).send("User does not exist");
+            }
+
+            // Update the user's profile picture to default
+            user.profilePic = {
+                image: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652909553/cursedTommy_lkgwcn.png",
+                cloudinaryId: "cursedTommy_lkgwcn"
+            }
 
             // Save the user
             await user.save();

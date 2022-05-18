@@ -2,9 +2,15 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
-    // TODO: add default pointing to a default image
-    image: {
-        type: String
+    profilePic: {
+        image: {
+            type: String,
+            default: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652909553/cursedTommy_lkgwcn.png"
+        },
+        cloudinaryId: {
+            type: String,
+            default: "cursedTommy_lkgwcn"
+        }
     },
     username: {
         type: String,
