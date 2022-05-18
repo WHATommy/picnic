@@ -1,9 +1,14 @@
-// Libraries
+// Express
 const express = require("express");
 const app = express();
+const server = require("http").createServer(app);   // Conjunction with express.js for websocket
 
 // Body parser 
 app.use(express.json());
+
+// Cors
+const cors = require("cors");
+app.use(cors());
 
 // Import API into Server
 const signup = require("./api/signup");
@@ -16,7 +21,7 @@ const restaurant = require("./api/restaurant");
 const invite = require("./api/invite");
 const attendee = require("./api/attendee");
 
-// Routes
+// Route requests to respective APIs
 app.use("/signup", signup);
 app.use("/auth", auth);
 app.use("/user", user);
@@ -27,9 +32,17 @@ app.use("/restaurant", restaurant);
 app.use("/invite", invite);
 app.use("/attendee", attendee);
 
-// Connect to mongo database
+// Connect to mongoDB
 const connectDb = require("./util/connectDb");
 connectDb();
 
+// Web socket
+const io = require("socket.io")(process.env.PORT, {
+    cors: {
+      origin: ["http://localhost:3000"]
+    }
+});
+
+// Server listening on PORT
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server listening on server ${PORT}`))
+server.listen(PORT, () => console.log(`Server listening on server ${PORT}`))
