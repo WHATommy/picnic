@@ -355,7 +355,7 @@ Router.put(
             }
 
             // Check if a image file exist in the request
-            if(!req.file.path) {
+            if(!req.file) {
                 return res.status(401).send("Empty image file");
             }
 
@@ -464,7 +464,7 @@ Router.delete(
             // Remove event images from cloudinary
             event.images.forEach(async image => {
                 await cloudinary.uploader.destroy(image.cloudinaryId);
-            })
+            });
 
             // Remove event from database
             await event.remove();

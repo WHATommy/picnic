@@ -350,7 +350,7 @@ Router.put(
             }
 
             // Check if a image file exist in the request
-            if(!req.file.path) {
+            if(!req.file) {
                 return res.status(401).send("Empty image file");
             }
 
@@ -451,9 +451,16 @@ Router.delete(
 
             // Update trip's housing
             await axios.put(`${baseUrl}/trip/${tripId}`, { housings: trip.housings }, { headers: { "token": req.header("token") } });
+
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
+            // Remove housing images from cloudinary
+            housing.images.forEach(async image => {
+                await cloudinary.uploader.destroy(image.cloudinaryId);
+            });
+
+            // Remove housing from database
             await housing.remove();
 
             return res.status(200).send("Housings has been removed");

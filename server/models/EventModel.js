@@ -11,6 +11,12 @@ const EventSchema = new Schema({
             image: {
                 type: String
             },
+            title: {
+                type: String
+            },
+            description: {
+                type: String
+            },
             cloudinaryId: {
                 type: String
             }

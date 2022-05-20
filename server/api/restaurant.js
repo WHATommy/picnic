@@ -238,6 +238,7 @@ Router.put(
 
             // Remove the attendee
             restaurant.attendees = restaurant.attendees.filter(attendee => attendee._id.valueOf() !== userId);
+            
             // Save the restaurant
             await restaurant.save();
 
@@ -451,16 +452,119 @@ Router.delete(
                 return res.status(404).send("Restaurants does not exist");
             }
 
+            // Filter out the restaurant from the trip's list of restaurants
             trip.restaurants = trip.restaurants.filter(restaurantId => restaurantId.valueOf() !== restaurant._id.valueOf());
 
             // Update trip's restaurants
             await axios.put(`${baseUrl}/trip/${tripId}`, { restaurants: trip.restaurants }, { headers: { "token": req.header("token") } });
+
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
+            // Remove restaurant's images from cloudinary
+            housing.images.forEach(async image => {
+                await cloudinary.uploader.destroy(image.cloudinaryId);
+            });
+
+            // Remove restaurant from database
             await restaurant.remove();
 
+            // Return successful
             return res.status(200).send("Restaurants has been removed");
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:restaurantId/uploadImage
+// Desc     Upload a restaurant image
+// Access   Private
+Router.put(
+    "/:tripId/:restaurantId/uploadImage",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            restaurantId
+        } = req.params
+
+        try {
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(restaurantId);
+
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurants does not exist");
+            }
+
+            // Check if a image file exist in the request
+            if(!req.file) {
+                return res.status(401).send("Empty image file");
+            }
+
+            // Upload image to cloudinary
+            let cloudinaryResult = null;
+            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+
+            // Push new image into restaurant's images
+            restaurant.images.push({
+                image: cloudinaryResult.secure_url,
+                cloudinaryId: cloudinaryResult.public_id
+            })
+
+            // Save the restaurant
+            await restaurant.save();
+
+            // Return successful
+            return res.status(200).json(restaurant);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:restaurantId/removeImage
+// Desc     Remove a restaurant image
+// Access   Private
+Router.put(
+    "/:tripId/:restaurantId/:imageId",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            restaurantId,
+            imageId
+        } = req.params
+
+        try {
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(restaurantId);
+
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurants does not exist");
+            };
+
+            // Remove restaurant image from cloudinary
+            await cloudinary.uploader.destroy(imageId);
+
+            // Remove target image
+            restaurant.images = restaurant.images.filter(image => image.cloudinaryId !== imageId);
+            
+            // Save the restaurant
+            await restaurant.save();
+
+            // Return successful
+            return res.status(200).json(restaurant);
 
         } catch (err) {
             console.log(err);
