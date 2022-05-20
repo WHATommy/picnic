@@ -5,11 +5,11 @@ const UserSchema = new Schema({
     profilePic: {
         image: {
             type: String,
-            default: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652909553/cursedTommy_lkgwcn.png"
+            default: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652972711/user_tdosel.png"
         },
         cloudinaryId: {
             type: String,
-            default: "cursedTommy_lkgwcn"
+            default: "user_tdosel"
         }
     },
     username: {

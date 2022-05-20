@@ -8,6 +8,8 @@ const validateRestaurantInput = require("../validator/restaurant");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 const Attendee = require("../models/AttendeeModel");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/mutler");
 
 // Route    POST api/restaurant/:tripId
 // Desc     Create a restaurant for a trip
@@ -137,17 +139,17 @@ Router.get(
     }
 )
 
-// Route    PUT api/restaurant/:tripId/:eventId/:userId/join
+// Route    PUT api/restaurant/:tripId/:restaurantId/:userId/join
 // Desc     User joins a restaurant
 // Access   Private
 Router.put(
-    "/:tripId/:eventId/:userId/join",
+    "/:tripId/:restaurantId/:userId/join",
     authMiddleware,
     async(req, res) => {
         // Store request values into callable variables
         const {
             tripId,
-            eventId,
+            restaurantId,
             userId
         } = req.params
 
@@ -158,13 +160,13 @@ Router.put(
                 return res.status(404).send("Trip does not exist");
             };
             // Retrieve a restaurant by ID
-            let restaurant = await Restaurants.findById(eventId);
+            let restaurant = await Restaurants.findById(restaurantId);
             // Check if restaurant exist in the database
             if (!restaurant) {
                 return res.status(404).send("Restaurant does not exist");
             };
 
-            // Check if attendee is already attending this event
+            // Check if attendee is already attending this restaurant
             let isAttending = restaurant.attendees.find(attendeeId => attendeeId._id.valueOf() === userId)
             if(isAttending) {
                 return res.status(401).json("Attendee is already in this restaurant")
@@ -182,13 +184,13 @@ Router.put(
             }
 
             // Check if attendee is already attending this restaurant
-            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === eventId);
+            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === restaurantId);
             if(isAttending) {
                 return res.status(401).json("User is already attending this restaurant")
             }
 
             // Add restaurant into the attendee's attending list
-            attendee.attending.restaurants.unshift(eventId);
+            attendee.attending.restaurants.unshift(restaurantId);
 
             // PUT request to attendee api
             await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
@@ -201,17 +203,17 @@ Router.put(
     }
 )
 
-// Route    PUT api/restaurant/:tripId/:eventId/:userId/leave
+// Route    PUT api/restaurant/:tripId/:restaurantId/:userId/leave
 // Desc     User leaves a restaurant
 // Access   Private
 Router.put(
-    "/:tripId/:eventId/:userId/leave",
+    "/:tripId/:restaurantId/:userId/leave",
     authMiddleware,
     async(req, res) => {
         // Store request values into callable variables
         const {
             tripId,
-            eventId,
+            restaurantId,
             userId
         } = req.params
 
@@ -222,7 +224,7 @@ Router.put(
                 return res.status(404).send("Trip does not exist");
             };
             // Retrieve a restaurant by ID
-            let restaurant = await Restaurants.findById(eventId);
+            let restaurant = await Restaurants.findById(restaurantId);
             // Check if restaurant exist in the database
             if (!restaurant) {
                 return res.status(404).send("Restaurant does not exist");
@@ -246,13 +248,13 @@ Router.put(
             }
 
             // Check if attendee is already attending this restaurant
-            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === eventId);
+            isAttending = attendee.attending.restaurants.find(restaurant => restaurant._id.valueOf() === restaurantId);
             if(!isAttending) {
                 return res.status(401).json("User is not attending this restaurant")
             }
 
             // Remove the restaurant from the attendee attending list
-            attendee.attending.restaurants = attendee.attending.restaurants.filter(restaurant => restaurant._id.valueOf() !== eventId);
+            attendee.attending.restaurants = attendee.attending.restaurants.filter(restaurant => restaurant._id.valueOf() !== restaurantId);
 
             // Update the attendee
             await axios.put(`${baseUrl}/attendee/${tripId}/${userId}`, { attending: attendee.attending }, { headers: { "token": req.header("token") } });
@@ -325,6 +327,100 @@ Router.put(
             return res.status(500).send("Server error");
         }
         
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:restaurantId/uploadImage
+// Desc     Upload a restaurant image
+// Access   Private
+Router.put(
+    "/:tripId/:restaurantId/uploadImage",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            restaurantId
+        } = req.params
+
+        try {
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(restaurantId);
+
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurants does not exist");
+            }
+
+            // Check if a image file exist in the request
+            if(!req.file.path) {
+                return res.status(401).send("Empty image file");
+            }
+
+            // Upload image to cloudinary
+            let cloudinaryResult = null;
+            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+
+            // Push new image into restaurant's images
+            restaurant.images.push({
+                image: cloudinaryResult.secure_url,
+                cloudinaryId: cloudinaryResult.public_id
+            })
+
+            // Save the restaurant
+            await restaurant.save();
+
+            // Return successful
+            return res.status(200).json(restaurant);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/restaurant/:tripId/:restaurantId/removeImage
+// Desc     Remove a restaurant image
+// Access   Private
+Router.put(
+    "/:tripId/:restaurantId/:imageId",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            restaurantId,
+            imageId
+        } = req.params
+
+        try {
+            // Retrieve a restaurant by ID
+            let restaurant = await Restaurants.findById(restaurantId);
+
+            // Check if restaurant exist in the database
+            if (!restaurant) {
+                return res.status(404).send("Restaurants does not exist");
+            };
+
+            // Remove restaurant image from cloudinary
+            await cloudinary.uploader.destroy(imageId);
+
+            // Remove target image
+            restaurant.images = restaurant.images.filter(image => image.cloudinaryId !== imageId);
+            
+            // Save the restaurant
+            await restaurant.save();
+
+            // Return successful
+            return res.status(200).json(restaurant);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
     }
 )
 

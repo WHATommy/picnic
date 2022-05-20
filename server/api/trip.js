@@ -8,6 +8,9 @@ const validateTripInput = require("../validator/trip");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 const trip = require("../validator/trip");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/mutler");
+const Attendee = require("../models/AttendeeModel");
 
 // Route    POST api/trip
 // Desc     Create a trip
@@ -15,6 +18,7 @@ const trip = require("../validator/trip");
 Router.post(
     "/",
     authMiddleware,
+    upload.single("image"),
     async(req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateTripInput(req.body);
@@ -35,9 +39,22 @@ Router.post(
         try {
             // Find the user inside the database
             const user = await User.findById(req.user);
+            if(!user) {
+                return res.status(404).send("User does not exist");
+            }
+
+            let cloudinaryResult;
+            // Upload image to cloudinary
+            if(req.file) {
+                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            }
             
             // Trip structure
             const newTrip = new Trip({
+                icon: cloudinaryResult ? {
+                    image: cloudinaryResult.secure_url,
+                    cloudinaryId: cloudinaryResult.public_id
+                } : null,
                 owner: req.user,
                 name,
                 location,
@@ -173,6 +190,52 @@ Router.put(
     }
 )
 
+// Route    PUT api/trip/:tripId/uploadImage
+// Desc     Update a trip's icon
+// Access   Private
+Router.put(
+    "/:tripId/uploadImage",
+    authMiddleware,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            tripId
+        } = req.params
+
+        try {
+            // Find the user inside the database
+            let trip = await Trip.findById(tripId);
+            if(!trip) {
+                return res.status(404).send("The trip does not exist");
+            };
+
+            // Remove current icon image from cloudinary
+            await cloudinary.uploader.destroy(trip.icon.cloudinaryId);
+
+            let cloudinaryResult;
+            // Upload new icon image to cloudinary
+            if(req.file) {
+                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            }
+
+            trip.icon = {
+                image: cloudinaryResult.secure_url,
+                cloudinaryId: cloudinaryResult.public_id
+            }
+
+            // Save the trip in the 'trip' collection and the trip id into the user's list of trips
+            await trip.save();
+            
+            return res.status(200).json(trip);
+            
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
 // Route    GET api/trip/:tripId/cost
 // Desc     Update a trip's total cost
 // Access   Private
@@ -219,52 +282,6 @@ Router.put(
     }
 )
 
-// Route    PUT api/trip/:tripId/:userId
-// Desc     Update a trip's moderator
-// Access   Private
-Router.put(
-    "/:tripId/:userId",
-    authMiddleware,
-    tripMiddleware.isOwner,
-    async(req, res) => {
-        // Store request values into callable variables
-        const {
-            tripId,
-            userId
-        } = req.params;
-
-        try {
-            // Find the user inside the database
-            let trip = await Trip.findById(tripId);
-            if(!trip) {
-                return res.status(404).send("The trip does not exist");
-            };
-
-            // Updated trip attendee structure
-            let attendeeIndex = await trip.attendees.findIndex(attendee => attendee._id.valueOf() === userId.valueOf());
-
-            // If attendee is not found, return error
-            if(attendeeIndex === -1) {
-                return res.status(404).send("User is not a attendee in the trip");
-            }
-
-            // Change moderator permission for target user
-            const permission = !trip.attendees[attendeeIndex].moderator;
-            trip.attendees[attendeeIndex].moderator = permission;
-            
-            // Save the trip in the 'trip' collection and the trip id into the user's list of trips
-            await trip.save();
-            
-            return res.status(200).json(trip);
-            
-        } catch (err) {
-            console.log(err);
-            return res.status(500).send("Server error");
-        }
-    }
-)
-
-
 // Route    DELETE api/trip/:tripId
 // Desc     Delete a trip
 // Access   Private
@@ -281,13 +298,12 @@ Router.delete(
         try {
             // Find the user inside the database
             let trip = await Trip.findById(tripId);
-
-            // User does not exist
+            // trip does not exist
             if(!trip) {
                 return res.status(404).send("The trip does not exist");
             };
 
-            // Remove the trip id from the owner's and attendee's trips list
+            // Remove the trip id from the owner's and attendee's trips list. Remove the icon from cloudinary.
             const users = [trip.owner, ...trip.attendees];
             await users.map(userId => {
                 let userTrips;
@@ -295,10 +311,14 @@ Router.delete(
                 .then(user => {
                     userTrips = user.trips.filter(userTrip => userTrip._id.valueOf() != trip._id.valueOf());
                 })
-                .then(() => {
-                    axios.put(`${baseUrl}/api/user`, { userId, trips: userTrips }, { headers: { "token": req.header("token") } });
-                })
+                .then(async () => {
+                    await axios.put(`${baseUrl}/api/user`, { userId, trips: userTrips }, { headers: { "token": req.header("token") } });
+                    await axios.delete(`${baseUrl}/api/attendee/${tripId}/${userId}`, {}, { headers: { "token": req.header("token") } });
+                });
             });
+
+            // Remove current icon image from cloudinary
+            await cloudinary.uploader.destroy(trip.icon.cloudinaryId);
 
             // Remove the trip from the database
             await trip.remove()

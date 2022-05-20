@@ -8,6 +8,8 @@ const validateEventInput = require("../validator/event");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 const Attendee = require("../models/AttendeeModel");
+const cloudinary = require("../util/cloudinary");
+const upload = require("../util/mutler");
 
 // Route    POST api/event/:tripId
 // Desc     Create a event for a trip
@@ -16,6 +18,7 @@ Router.post(
     "/:tripId",
     authMiddleware,
     tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
+    upload.single("image"),
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -30,7 +33,6 @@ Router.post(
             tripId
         } = req.params;
         const {
-            image,
             name,
             location,
             startDate,
@@ -52,7 +54,6 @@ Router.post(
             // Trip structure
             let newEvent = new Events({
                 tripId,
-                image,
                 poster: req.user,
                 name,
                 location,
@@ -283,7 +284,6 @@ Router.put(
             eventId
         } = req.params
         const {
-            image,
             name,
             location,
             startDate,
@@ -305,7 +305,6 @@ Router.put(
             }
 
             // Update the event structure
-            image ? event.image = image : null;
             name ? event.name = name : null;
             location ? event.location = location : null;
             startDate ? event.startDate = startDate : null;
@@ -325,6 +324,100 @@ Router.put(
             }
 
             return res.status(200).json(event);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/event/:tripId/:eventId/uploadImage
+// Desc     Upload a event image
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/uploadImage",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            eventId
+        } = req.params
+
+        try {
+            // Retrieve a event by ID
+            let event = await Events.findById(eventId);
+
+            // Check if event exist in the database
+            if (!event) {
+                return res.status(404).send("Events does not exist");
+            }
+
+            // Check if a image file exist in the request
+            if(!req.file.path) {
+                return res.status(401).send("Empty image file");
+            }
+
+            // Upload image to cloudinary
+            let cloudinaryResult = null;
+            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+
+            // Push new image into event's images
+            event.images.push({
+                image: cloudinaryResult.secure_url,
+                cloudinaryId: cloudinaryResult.public_id
+            })
+
+            // Save the event
+            await event.save();
+
+            // Return successful
+            return res.status(200).json(event);
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    PUT api/event/:tripId/:eventId/removeImage
+// Desc     Remove a event image
+// Access   Private
+Router.put(
+    "/:tripId/:eventId/:imageId",
+    authMiddleware,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    upload.single("image"),
+    async(req, res) => {
+        // Store request values into callable variables
+        const {
+            eventId,
+            imageId
+        } = req.params
+
+        try {
+            // Retrieve a event by ID
+            let event = await Events.findById(eventId);
+
+            // Check if event exist in the database
+            if (!event) {
+                return res.status(404).send("Events does not exist");
+            };
+
+            // Remove event image from cloudinary
+            await cloudinary.uploader.destroy(imageId);
+
+            // Remove target image
+            event.images = event.images.filter(image => image.cloudinaryId !== imageId);
+            
+            // Save the event
+            await event.save();
+
+            // Return successful
+            return res.status(200).json(event);
+
         } catch (err) {
             console.log(err);
             return res.status(500).send("Server error");
@@ -359,17 +452,25 @@ Router.delete(
                 return res.status(404).send("Events does not exist");
             }
 
+            // Remove event from trip's event
             trip.events = trip.events.filter(eventId => eventId.valueOf() !== event._id.valueOf());
 
             // Update trip's events
             await axios.put(`${baseUrl}/trip/${tripId}`, { events: trip.events }, { headers: { "token": req.header("token") } });
+            
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
+            // Remove event images from cloudinary
+            event.images.forEach(async image => {
+                await cloudinary.uploader.destroy(image.cloudinaryId);
+            })
+
+            // Remove event from database
             await event.remove();
 
+            // Return successful
             return res.status(200).send("Events has been removed");
-
         } catch (err) {
             console.log(err);
             return res.status(500).send("Server error");

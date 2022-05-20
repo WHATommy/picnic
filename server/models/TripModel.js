@@ -2,9 +2,19 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const TripSchema = new Schema({
+    icon: {
+        image: {
+            type: String,
+            default: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652930330/people_yvvkc0.png"
+        },
+        cloudinaryId: {
+            type: String,
+            default: "people_yvvkc0"
+        }
+    },
     owner: {
         type: Schema.Types.ObjectId,
-        ref: 'users'
+        ref: "users"
     },
     name: {
         type: String,

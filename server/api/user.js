@@ -118,6 +118,8 @@ Router.put(
             let cloudinaryResult = null;
             // Upload image to cloudinary
             if(req.file) {
+                // Remove current icon image from cloudinary
+                await cloudinary.uploader.destroy(user.profilePic.cloudinaryId);
                 cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
             }
 
@@ -164,8 +166,8 @@ Router.put(
 
             // Update the user's profile picture to default
             user.profilePic = {
-                image: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652909553/cursedTommy_lkgwcn.png",
-                cloudinaryId: "cursedTommy_lkgwcn"
+                image: "https://res.cloudinary.com/dkf1fcytw/image/upload/v1652972711/user_tdosel.png",
+                cloudinaryId: "user_tdosel"
             }
 
             // Save the user
@@ -241,7 +243,7 @@ Router.delete(
             const user = await User.findById(req.user);
             if(!user) {
                 return res.status(404).send("User does not exist");
-            }
+            };
 
             // Filter out the targeted user id out of the trip's list of attendees and pending users
             await user.trips.map(async tripId => {
@@ -249,10 +251,17 @@ Router.delete(
                 const attendees = await trip.attendees.filter(userId => user._id.valueOf() !== userId.valueOf());
                 const pendingUsers = await trip.pendingUsers.filter(userId => user._id.valueOf() !== userId.valueOf());
                 await axios.put(`${baseUrl}/trip/${tripId}`, { attendees, pendingUsers }, { headers: { "token": req.header("token") } });
-            })
+            });
+
+            // Delete user's profile picture from database if it is not default
+            if(user.profilePic.cloudinaryId !== "user_tdosel") {
+                await cloudinary.uploader.destroy(user.profilePic.cloudinaryId);
+            }
             
+            // Remove user from database
             await user.remove(); 
 
+            // Return successful
             return res.status(200).send("User has been removed");
 
         } catch (err) {
