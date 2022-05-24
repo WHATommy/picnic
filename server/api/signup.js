@@ -30,21 +30,30 @@ Router.post(
         } = req.body;
 
         try {
-            // Initalize empty user varaible
+            // Initialize empty user varaible
             let user;
+
+            // Initialize error
+            let error = [];
 
             // Check if a user with that email exist in the system
             user = await User.findOne({ email: email.toLowerCase() });
             if(user) {
-                return res.status(401).send([{msg:"Email is already in use"}]);
+                error.push({email: "Email is already in use"});
             };
 
             // Check if a user with that username exist in the system
             user = await User.findOne({ username: username.toLowerCase() });
             if(user) {
-                return res.status(401).send([{msg:"Username is already taken"}]);
+                error.push({username: "Username is already taken"});
             };
 
+            // If errors exist, return unsuccessful with errors
+            if(error.length !== 0) {
+                return res.status(401).send({ error });
+            };
+
+            // Initialize empty cloudinary result
             let cloudinaryResult;
             // Upload image to cloudinary
             if(req.file) {

@@ -155,6 +155,7 @@ Router.put(
             if (!trip) {
                 return res.status(404).send("Trip does not exist");
             };
+            
             // Retrieve a event by ID
             let event = await Events.findById(eventId);
             // Check if event exist in the database
