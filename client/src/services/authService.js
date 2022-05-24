@@ -1,5 +1,5 @@
 import axios from "axios";
-import baseUrl from "../../../server/util/baseUrl";
+import baseUrl from "../util/baseUrl";
 
 // Register action
 const register = (image, username, email, password, confirmPassword) => {
@@ -9,9 +9,9 @@ const register = (image, username, email, password, confirmPassword) => {
             if(!response.data) {
                 console.log("Register API failed")
             }
-            setToken(response.data);
+            return response.data;
         })
-        .error(err => {
+        .catch(err => {
             console.log(err);
         });
 
@@ -21,12 +21,13 @@ const register = (image, username, email, password, confirmPassword) => {
 const login = (email, password) => {
     return axios.post(`${baseUrl}/auth`, { email, password })
     .then(response => {
+        console.log(response)
         if(!response.data) {
             console.log("Register API failed")
         }
-        setToken(response.data);
+        return response.data;
     })
-    .error(err => {
+    .catch(err => {
         console.log(err);
     });
 };
@@ -42,6 +43,6 @@ const logout = () => {
     localStorage.removeItem("token");
 }
 
-const authService = { register, login, logout }
+const authService = { register, login, setToken, logout }
 export default authService;
 

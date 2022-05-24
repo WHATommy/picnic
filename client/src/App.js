@@ -1,37 +1,40 @@
 import React, { Fragment, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+} from "react-router-dom";
 import RouteController from './components/routing/RouteController';
+
+// Components
 import Login from './components/auth/Login';
-import { LOGOUT } from './actions/types';
 
-// Redux
-import { Provider } from 'react-redux';
-import store from './store';
-import setAuthToken from './util/setAuthToken';
-import { loadUser } from './actions/auth';
+// Slices
+import { loadUser } from './slices/user';
 
+// Styling
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
+
+// Check if user has token
 if (localStorage.token) {
-  setAuthToken(localStorage.token);
+  localStorage.setItem("token", localStorage.token);
 }
 
 const App = () => {
   useEffect(() => {
     if (localStorage.token) {
-      store.dispatch(loadUser());
+      loadUser();
     }
   }, []);
 
   return(
-    <Provider store={store}>
-      <Router>
-        <Fragment>
-          <Routes>
-            <Route exact path="/" component={Login}/>
-            <Route component={RouteController}/>
-          </Routes>
-        </Fragment>
-      </Router>
-    </Provider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={ <Login /> }/>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

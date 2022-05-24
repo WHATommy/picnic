@@ -1,124 +1,139 @@
-import React, { Fragment, useState } from "react";
-import { connect } from "react-redux";
-import { Link, Navigate } from "react-router-dom";
-import { register } from "../../actions/auth";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
-const Register = ({ register, isAuthenticated }) => {
-    const [registerData, setRegisterData] = useState({
-        firstName: "",
-        lastName: "",
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    });
+import { register } from "../../slices/auth";
+import { clearMessage } from "../../slices/message";
 
-    const { firstName, lastName, username, email, password, confirmPassword } = registerData;
+const Register = () => {
+  const [successful, setSuccessful] = useState(false);
 
-    const onChange = (e) => setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+  const { message } = useSelector((state) => state.message);
+  const dispatch = useDispatch();
 
-    const onSubmit = async (e) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            console.log("Passwords do not match");
-        } else {
-            register({
-                firstName,
-                lastName,
-                username,
-                email,
-                password,
-                confirmPassword
-            });
-        }
-    };
+  useEffect(() => {
+    dispatch(clearMessage());
+  }, [dispatch]);
 
-    if (isAuthenticated) {
-        return <Navigate to="/dashboard" />;
-    }
+  const initialValues = {
+    username: "",
+    email: "",
+    password: "",
+  };
 
-    return (
-    <Fragment>
-        <h1 className="">Sign Up</h1>
-            <p className="">
-            <i className="" /> Create Your Account
-            </p>
-            <form className="" onSubmit={onSubmit}>
-            <div className="">
-                <input
-                type="text"
-                placeholder="First name"
-                name="firstName"
-                value={firstName}
-                onChange={onChange}
-                />
-            </div>
-            <div className="">
-                <input
-                type="text"
-                placeholder="Last name"
-                name="lastName"
-                value={lastName}
-                onChange={onChange}
-                />
-            </div>
-            <div className="">
-                <input
-                type="text"
-                placeholder="username"
-                name="username"
-                value={username}
-                onChange={onChange}
-                />
-            </div>
-            <div className="">
-                <input
-                type="email"
-                placeholder="Email Address"
-                name="email"
-                value={email}
-                onChange={onChange}
-                />
-                <small className="form-text">
-                This site uses Gravatar so if you want a profile image, use a
-                Gravatar email
-                </small>
-            </div>
-            <div className="">
-                <input
-                type="password"
-                placeholder="Password"
-                name="password"
-                value={password}
-                onChange={onChange}
-                />
-            </div>
-            <div className="">
-                <input
-                type="password"
-                placeholder="Confirm Password"
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={onChange}
-                />
-            </div>
-            <input type="submit" className="" value="Register" />
-            </form>
-            <p className="">
-            Already have an account? <Link to="/login">Sign In</Link>
-            </p>
-        </Fragment>
-    );
+  const validationSchema = Yup.object().shape({
+    username: Yup.string()
+      .test(
+        "len",
+        "The username must be between 3 and 20 characters.",
+        (val) =>
+          val &&
+          val.toString().length >= 3 &&
+          val.toString().length <= 20
+      )
+      .required("This field is required!"),
+    email: Yup.string()
+      .email("This is not a valid email.")
+      .required("This field is required!"),
+    password: Yup.string()
+      .test(
+        "len",
+        "The password must be between 6 and 40 characters.",
+        (val) =>
+          val &&
+          val.toString().length >= 6 &&
+          val.toString().length <= 40
+      )
+      .required("This field is required!"),
+  });
+
+  const handleRegister = (formValue) => {
+    const { username, email, password } = formValue;
+
+    setSuccessful(false);
+
+    dispatch(register({ username, email, password }))
+      .unwrap()
+      .then(() => {
+        setSuccessful(true);
+      })
+      .catch(() => {
+        setSuccessful(false);
+      });
+  };
+
+  return (
+    <div className="col-md-12 signup-form">
+      <div className="card card-container">
+        <img
+          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+          alt="profile-img"
+          className="profile-img-card"
+        />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleRegister}
+        >
+          <Form>
+            {!successful && (
+              <div>
+                <div className="form-group">
+                  <label htmlFor="username">Username</label>
+                  <Field name="username" type="text" className="form-control" />
+                  <ErrorMessage
+                    name="username"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <Field name="email" type="email" className="form-control" />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <Field
+                    name="password"
+                    type="password"
+                    className="form-control"
+                  />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
+                </div>
+              </div>
+            )}
+          </Form>
+        </Formik>
+      </div>
+
+      {message && (
+        <div className="form-group">
+          <div
+            className={successful ? "alert alert-success" : "alert alert-danger"}
+            role="alert"
+          >
+            {message}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-Register.propTypes = {
-register: PropTypes.func.isRequired,
-isAuthenticated: PropTypes.bool,
-};
-
-const mapStateToProps = (state) => ({
-isAuthenticated: state.auth.isAuthenticated,
-});
-
-export default connect(mapStateToProps, { register })(Register);
+export default Register;

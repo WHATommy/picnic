@@ -1,6 +1,6 @@
 import axios from "axios";
 import authHeader from "../util/authHeader";
-import baseUrl from "../../../server/util/baseUrl";
+import baseUrl from "../util/baseUrl";
 
 const getUserTrips = async () => {
     try {

@@ -29,13 +29,13 @@ Router.post(
             // Check if incoming email exist in the database
             const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
             if(!user) {
-                return res.status(401).send([{msg:"Your email or password may be incorrect, or you have not register an account under these credentials."}]);
+                return res.status(401).send("Your email or password may be incorrect, or you have not register an account under these credentials.");
             }
 
             // Check if the incoming password matches with the selected user's password through bcrypt
             const validPassword = await bcrypt.compare(password, user.password);
             if (!validPassword) {
-                return res.status(401).send([{msg:"Your email or password may be incorrect, or you have not register an account under these credentials."}]);
+                return res.status(401).send("Your email or password may be incorrect, or you have not register an account under these credentials.");
             }
 
             // Create a token for the user using JWT

@@ -1,72 +1,103 @@
-import React, { Fragment, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { login } from '../../actions/auth';
+import React, { useState, useEffect  } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Navigate } from "react-router-dom";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
-const Login = ({ login, isAuthenticated }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+import { login } from "../../slices/auth";
+import { clearMessage } from "../../slices/message";
+
+const Login = (props) => {
+  const [loading, setLoading] = useState(false);
+
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { message } = useSelector((state) => state.message);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(clearMessage());
+  }, [dispatch]);
+
+  const initialValues = {
+    email: "",
+    password: "",
+  };
+
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().required("This field is required!"),
+    password: Yup.string().required("This field is required!"),
   });
 
-  const { email, password } = formData;
+  const handleLogin = (formValue) => {
+    const { email, password } = formValue;
+    setLoading(true);
 
-  const onChange = e =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const onSubmit = e => {
-    e.preventDefault();
-    login(email, password);
+    dispatch(login({ email, password }))
+      .unwrap()
+      .then(() => {
+        props.history.push("/dashboard");
+        window.location.reload();
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
+    //return <Navigate to="/dashboard" />;
   }
 
   return (
-    <Fragment>
-      <h1 className="">Sign In</h1>
-      <p className="">
-        <i className="" /> Sign Into Your Account
-      </p>
-      <form className="" onSubmit={onSubmit}>
-        <div className="">
-          <input
-            type="email"
-            placeholder="Email Address"
-            name="email"
-            value={email}
-            onChange={onChange}
-            required
-          />
+    <div className="col-md-12 login-form">
+      <div className="card card-container">
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleLogin}
+        >
+          <Form>
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <Field name="email" type="text" className="form-control" />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="alert alert-danger"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <Field name="password" type="password" className="form-control" />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="alert alert-danger"
+              />
+            </div>
+
+            <div className="form-group">
+              <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                {loading && (
+                  <span className="spinner-border spinner-border-sm"></span>
+                )}
+                <span>Login</span>
+              </button>
+            </div>
+          </Form>
+        </Formik>
+      </div>
+
+      {message && (
+        <div className="form-group">
+          <div className="alert alert-danger" role="alert">
+            {message}
+          </div>
         </div>
-        <div className="">
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            value={password}
-            onChange={onChange}
-            minLength="6"
-          />
-        </div>
-        <input type="submit" className="" value="Login" />
-      </form>
-      <p className="">
-        Don't have an account? <Link to="/register">Sign Up</Link>
-      </p>
-    </Fragment>
+      )}
+    </div>
   );
 };
 
-Login.propTypes = {
-  login: PropTypes.func.isRequired,
-  isAuthenticated: PropTypes.bool
-};
-
-const mapStateToProps = state => ({
-  isAuthenticated: state.auth.isAuthenticated
-});
-
-export default connect(mapStateToProps, { login })(Login);
+export default Login;

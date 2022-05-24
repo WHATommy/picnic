@@ -1,21 +1,41 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const initialState = {};
+import userService from "../services/userService";
+import { setMessage } from "./message";
+
+export const loadUser = createAsyncThunk(
+    "user",
+    async ({}, thunkAPI) => {
+        try {
+            const trips = await userService.getUserTrips();
+            const invitations = await userService.getUserInvitations();
+            return { trips, invitations };
+        } catch (error) {
+            const message =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+            thunkAPI.dispatch(setMessage(message));
+            return thunkAPI.rejectWithValue();
+        }
+    }
+)
+
+const initialState = { trips: null, invitations: null };
 
 const userSlice = createSlice({
     name: "user",
     initialState,
-    reducers: {
-        setTrips: (state, action) => {
-            return { trips: action.payload };
-        },
-        setInvitations: (state, action) => {
-            return { invitiation: action.payload };
-        },
-    },
+    extraReducers: {
+        [loadUser.fulfilled]: (state, action) => {
+            state.trips = action.payload.trips;
+            state.invitations = action.payload.invitations;
+        }
+    }
 });
 
-const { reducer, actions } = userSlice;
+const { reducer } = userSlice;
 
-export const { setTrips, setInvitations } = actions;
 export default reducer;
