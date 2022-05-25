@@ -1,15 +1,19 @@
-import { Navigate } from 'react-router-dom';
-import Test from "../dashboard/test"
+import React from "react";
 
-const routes = (isAuthenticated) => [
-  {
-    path: '/',
-    element: isAuthenticated ? <Test /> : <Navigate to="/" />,
-    children: [
-      { path: '/dashboard', element: <Test /> },
-      { path: '/', element: <Navigate to="/dashboard" /> }
-    ],
+import {Navigate, Outlet} from "react-router-dom"
+
+const useAuth = () => {
+  const token = localStorage.getItem("token")
+  if(token){
+    return true
+  } else {
+    return false
   }
-];
+}
 
-export default routes;
+const PrivateRoutes=(props) =>{
+  const auth = useAuth()
+  return auth? <Outlet/> : <Navigate to="/login"/>
+}
+
+export default PrivateRoutes;
