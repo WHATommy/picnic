@@ -4,11 +4,12 @@ import {
   Routes,
   Route,
   Link,
+  useRoutes,
 } from "react-router-dom";
-import RouteController from './components/routing/RouteController';
 
 // Components
 import Login from './components/auth/Login';
+import Register from './components/auth/Register';
 
 // Slices
 import { loadUser } from './slices/user';
@@ -16,6 +17,8 @@ import { loadUser } from './slices/user';
 // Styling
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import { useSelector } from 'react-redux';
+import routes from './components/routing/PrivateRoute';
 
 // Check if user has token
 if (localStorage.token) {
@@ -32,7 +35,9 @@ const App = () => {
   return(
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={ <Login /> }/>
+        <Route path="/" element={ <Login /> } />
+        <Route path="/register" element={ <Register /> } />
+        
       </Routes>
     </BrowserRouter>
   )

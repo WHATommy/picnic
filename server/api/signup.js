@@ -7,7 +7,45 @@ const validateRegisterInput = require("../validator/register");
 const cloudinary = require("../util/cloudinary");
 const upload = require("../util/mutler");
 
-// Route    POST api/signup
+// Route    POST signup/checkusername
+// Desc     Check if username is unique
+// Access   Public
+Router.get(
+    "/checkusername/:username",
+    async (req, res) => {
+        try {
+            const username = await User.findOne({ username: req.params.username.toLowerCase() });
+            if(username) {
+                return res.send(false);
+            }
+           return res.send(true);
+        } catch (err) {
+            console.log(err);
+            res.status(500).send("Server Error");
+        }
+    }
+)
+
+// Route    POST signup/checkemail
+// Desc     Check if username is unique
+// Access   Public
+Router.get(
+    "/checkemail/:email",
+    async (req, res) => {
+        try {
+            const email = await User.findOne({ email: req.params.email.toLowerCase() });
+            if(email) {
+                return res.send(false);
+            }
+           return res.send(true);
+        } catch (err) {
+            console.log(err);
+            res.status(500).send("Server Error")
+        }
+    }
+)
+
+// Route    POST signup
 // Desc     Register user into the database
 // Access   Public
 Router.post(
@@ -50,7 +88,7 @@ Router.post(
 
             // If errors exist, return unsuccessful with errors
             if(error.length !== 0) {
-                return res.status(401).send({ error });
+                return res.status(401).send(error);
             };
 
             // Initialize empty cloudinary result

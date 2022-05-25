@@ -5,6 +5,8 @@ import * as Yup from "yup";
 
 import { register } from "../../slices/auth";
 import { clearMessage } from "../../slices/message";
+import axios from "axios";
+import baseUrl from "../../util/baseUrl";
 
 const Register = () => {
   const [successful, setSuccessful] = useState(false);
@@ -17,13 +19,16 @@ const Register = () => {
   }, [dispatch]);
 
   const initialValues = {
+    image: null,
     username: "",
     email: "",
     password: "",
+    confirmPassword: ""
   };
 
   const validationSchema = Yup.object().shape({
     username: Yup.string()
+      .required("Username is required")
       .test(
         "len",
         "The username must be between 3 and 20 characters.",
@@ -32,11 +37,27 @@ const Register = () => {
           val.toString().length >= 3 &&
           val.toString().length <= 20
       )
-      .required("This field is required!"),
+      .test(
+        "checkUsernameUnique", 
+        "This username is already registered", 
+        async (username) => { 
+          const response = await axios.get(`${baseUrl}/signup/checkusername/${username}`);
+          return response.data
+        }
+      ),
     email: Yup.string()
       .email("This is not a valid email.")
-      .required("This field is required!"),
+      .required("Email is required")
+      .test(
+        "checkEmailUnique", 
+        "This email is already registered", 
+        async (email) => { 
+          const response = await axios.get(`${baseUrl}/signup/checkemail/${email}`);
+          return response.data
+        }
+      ),
     password: Yup.string()
+      .required("Password is required")
       .test(
         "len",
         "The password must be between 6 and 40 characters.",
@@ -44,16 +65,18 @@ const Register = () => {
           val &&
           val.toString().length >= 6 &&
           val.toString().length <= 40
-      )
-      .required("This field is required!"),
+      ),
+    confirmPassword: Yup.string()
+      .required('Confirming your password is required')
+      .oneOf([Yup.ref('password'), null], "Password and confirm password must match")
   });
 
   const handleRegister = (formValue) => {
-    const { username, email, password } = formValue;
+    const { image, username, email, password, confirmPassword } = formValue;
 
     setSuccessful(false);
 
-    dispatch(register({ username, email, password }))
+    dispatch(register({ image, username, email, password, confirmPassword }))
       .unwrap()
       .then(() => {
         setSuccessful(true);
@@ -66,11 +89,6 @@ const Register = () => {
   return (
     <div className="col-md-12 signup-form">
       <div className="card card-container">
-        <img
-          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-          alt="profile-img"
-          className="profile-img-card"
-        />
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -114,6 +132,20 @@ const Register = () => {
                 </div>
 
                 <div className="form-group">
+                  <label htmlFor="password">Confirm Password</label>
+                  <Field
+                    name="confirmPassword"
+                    type="password"
+                    className="form-control"
+                  />
+                  <ErrorMessage
+                    name="confirmPassword"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
                   <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
                 </div>
               </div>
@@ -121,17 +153,6 @@ const Register = () => {
           </Form>
         </Formik>
       </div>
-
-      {message && (
-        <div className="form-group">
-          <div
-            className={successful ? "alert alert-success" : "alert alert-danger"}
-            role="alert"
-          >
-            {message}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

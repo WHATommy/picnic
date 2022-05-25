@@ -25,7 +25,7 @@ const Login = (props) => {
   };
 
   const validationSchema = Yup.object().shape({
-    email: Yup.string().required("This field is required!"),
+    email: Yup.string().required("This field is required!").email("Email must be valid"),
     password: Yup.string().required("This field is required!"),
   });
 
@@ -45,11 +45,18 @@ const Login = (props) => {
   };
 
   if (isAuthenticated) {
-    //return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard" />;
   }
 
   return (
     <div className="col-md-12 login-form">
+      {message && (
+        <div className="form-group">
+          <div className="alert alert-danger" role="alert">
+            {message}
+          </div>
+        </div>
+      )}
       <div className="card card-container">
         <Formik
           initialValues={initialValues}
@@ -88,14 +95,6 @@ const Login = (props) => {
           </Form>
         </Formik>
       </div>
-
-      {message && (
-        <div className="form-group">
-          <div className="alert alert-danger" role="alert">
-            {message}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

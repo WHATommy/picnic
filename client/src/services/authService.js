@@ -6,30 +6,16 @@ const register = (image, username, email, password, confirmPassword) => {
     return axios
         .post(`${baseUrl}/signup`, { image, username, email, password, confirmPassword })
         .then(response => {
-            if(!response.data) {
-                console.log("Register API failed")
-            }
             return response.data;
-        })
-        .catch(err => {
-            console.log(err);
         });
-
 };
 
 // Login action
 const login = (email, password) => {
     return axios.post(`${baseUrl}/auth`, { email, password })
     .then(response => {
-        console.log(response)
-        if(!response.data) {
-            console.log("Register API failed")
-        }
         return response.data;
     })
-    .catch(err => {
-        console.log(err);
-    });
 };
 
 // Set token
