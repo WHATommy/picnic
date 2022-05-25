@@ -14,7 +14,6 @@ import PrivateRoute from "./components/routing/PrivateRoute";
 // Components
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import Test from "./components/dashboard/test";
 
 // Slices
 import { loadUser } from './slices/user';
@@ -23,7 +22,7 @@ import { loadUser } from './slices/user';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { useSelector } from 'react-redux';
-import routes from './components/routing/PrivateRoute';
+import Dashboard from './components/dashboard/Dashboard';
 
 // Check if user has token
 if (localStorage.token) {
@@ -40,16 +39,17 @@ const App = () => {
   return(
     <BrowserRouter>
       <Routes>
+        
         <Route path="/" element={<PublicRoute/>}>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Route>       
 
         <Route path="/" element={<PrivateRoute/>}>
-            <Route path="/test" element={<Test />} />
-            <Route path="/dashboard" element={<Test />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route> 
+
       </Routes>
     </BrowserRouter>
   )

@@ -10,7 +10,7 @@ import axios from "axios";
 import baseUrl from "../../util/baseUrl";
 
 const Register = () => {
-  const [successful, setSuccessful] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -69,21 +69,21 @@ const Register = () => {
       ),
     confirmPassword: Yup.string()
       .required('Confirming your password is required')
-      .oneOf([Yup.ref('password'), null], "Password and confirm password must match")
+      .oneOf([Yup.ref('password'), null], "Confirm password must match with password")
   });
 
   const handleRegister = (formValue) => {
     const { image, username, email, password, confirmPassword } = formValue;
 
-    setSuccessful(false);
+    setLoading(false);
 
     dispatch(register({ image, username, email, password, confirmPassword }))
       .unwrap()
       .then(() => {
-        setSuccessful(true);
+        setLoading(true);
       })
       .catch(() => {
-        setSuccessful(false);
+        setLoading(false);
       });
   };
 
@@ -100,29 +100,29 @@ const Register = () => {
           onSubmit={handleRegister}
         >
           <Form>
-            {!successful && (
+            {!loading && (
               <div>
-                <div className="form-group">
+                <div className="mb-2">
                   <label htmlFor="username">Username</label>
                   <Field name="username" type="text" className="form-control" />
                   <ErrorMessage
                     name="username"
                     component="div"
-                    className="alert alert-danger"
+                    className="text-danger"
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="mb-2">
                   <label htmlFor="email">Email</label>
                   <Field name="email" type="email" className="form-control" />
                   <ErrorMessage
                     name="email"
                     component="div"
-                    className="alert alert-danger"
+                    className="text-danger"
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="mb-2">
                   <label htmlFor="password">Password</label>
                   <Field
                     name="password"
@@ -132,11 +132,11 @@ const Register = () => {
                   <ErrorMessage
                     name="password"
                     component="div"
-                    className="alert alert-danger"
+                    className="text-danger"
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="mb-2">
                   <label htmlFor="password">Confirm Password</label>
                   <Field
                     name="confirmPassword"
@@ -146,12 +146,27 @@ const Register = () => {
                   <ErrorMessage
                     name="confirmPassword"
                     component="div"
-                    className="alert alert-danger"
+                    className="text-danger"
                   />
                 </div>
-
-                <div className="form-group">
-                  <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
+              
+                <div className="mb-2 row">
+                  <div className="col-6">
+                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                      {loading && (
+                        <span className="spinner-border spinner-border-sm"></span>
+                      )}
+                      <span>Sign up</span>
+                    </button>
+                  </div>
+                  <div className="col-6 text-end">
+                    <p>
+                      Already have an account?&nbsp;
+                      <a href="/login" className="" disabled={loading}>
+                        <span style={{whiteSpace: "nowrap"}}>Login</span>
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
