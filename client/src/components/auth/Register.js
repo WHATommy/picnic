@@ -79,9 +79,6 @@ const Register = () => {
 
     dispatch(register({ image, username, email, password, confirmPassword }))
       .unwrap()
-      .then(() => {
-        setLoading(true);
-      })
       .catch(() => {
         setLoading(false);
       });

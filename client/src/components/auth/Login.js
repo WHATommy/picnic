@@ -28,7 +28,7 @@ const Login = (props) => {
 
   const validationSchema = Yup.object().shape({
     email: Yup.string().required("Email is required").email("Email must be valid"),
-    password: Yup.string().required("Passowrd is required"),
+    password: Yup.string().required("Password is required"),
   });
 
   const handleLogin = (formValue) => {
@@ -37,14 +37,14 @@ const Login = (props) => {
 
     dispatch(login({ email, password }))
       .unwrap()
-      .then(() => {
-        props.history.push("/dashboard");
-        window.location.reload();
-      })
       .catch(() => {
         setLoading(false);
       });
   };
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
   
   return (
     <div className="col-md-12 login-form">
