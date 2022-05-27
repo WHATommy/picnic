@@ -5,10 +5,10 @@ import { setMessage } from "./message";
 
 export const loadUser = createAsyncThunk(
     "user",
-    async ({}, thunkAPI) => {
+    async ({ token }, thunkAPI) => {
         try {
-            const trips = await userService.getUserTrips();
-            const invitations = await userService.getUserInvitations();
+            const trips = await userService.getUserTrips(token);
+            const invitations = await userService.getUserInvitations(token);
             return { trips, invitations };
         } catch (error) {
             const message =
@@ -36,6 +36,5 @@ const userSlice = createSlice({
     }
 });
 
-const { reducer } = userSlice;
-
+const { reducer } = userSlice;  
 export default reducer;

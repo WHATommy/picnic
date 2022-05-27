@@ -3,5 +3,5 @@ export default function authHeader() {
     if(!token) {
         return {};
     }
-    return { "token": token };
+    return token;
 }

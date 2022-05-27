@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import authService from "../services/authService";
 import { setMessage } from "./message";
+import { loadUser } from "./user";
 
 const token = localStorage.getItem("token");
 
@@ -12,11 +13,9 @@ export const register = createAsyncThunk(
     try {
       // Send request to api for user registration
       const response = await authService.register(image, username, email, password, confirmPassword);
-      console.log(response)
       return authService.setToken(response);
     } catch (error) {
       const message = error.response.data
-      console.log(message)
       thunkAPI.dispatch(setMessage(message));
       return thunkAPI.rejectWithValue();
     }
@@ -29,6 +28,7 @@ export const login = createAsyncThunk(
   async ({ email, password }, thunkAPI) => {
     try {
       const response = await authService.login(email, password);
+      await thunkAPI.dispatch(loadUser({token: response}));
       return authService.setToken(response);
     } catch (error) {
       const message = error.response.data

@@ -19,7 +19,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./App.css";
 
-
 // Check if user has token
 if (localStorage.token) {
   localStorage.setItem("token", localStorage.token);
