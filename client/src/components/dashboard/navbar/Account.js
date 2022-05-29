@@ -1,15 +1,25 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from "react-redux";
 import {OverlayTrigger, Tooltip, Modal} from 'react-bootstrap';
 import * as Yup from "yup";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 
-import { clearMessage } from "../../../slices/message";
+import { clearMessage, setMessage } from "../../../slices/message";
 import axios from "axios";
 import baseUrl from "../../../util/baseUrl";
+
+import userService from '../../../services/userService';
+import { loadUser } from '../../../slices/user';
 
 export const Account = (props) => {
     // Loading state
     const [loading, setLoading] = useState(false);
+
+    // Message state
+    const [message, setMessage] = useState();
+
+    // Redux dispatch
+    const dispatch = useDispatch();
 
     // Tool tip
     const renderTooltip = () => (
@@ -28,11 +38,21 @@ export const Account = (props) => {
         setShow(true);
     };
 
+    const [currentValues, setCurrentValues] = useState({
+        username: props.user.username,
+        email: props.user.email
+    })
+    const { username, email } = currentValues;
+
+    const onChange = (e) => {
+        setCurrentValues({ ...currentValues, [e.target.name]: e.target.value });
+    };
+
     // Form initial values
     const initialValues = {
         image: null,
-        username: props.username,
-        email: props.email,
+        username: props.user.username,
+        email: props.user.email,
     };
 
     // Form validation
@@ -51,8 +71,11 @@ export const Account = (props) => {
             "checkUsernameUnique", 
             "This username is already registered", 
             async (username) => { 
-              const response = await axios.get(`${baseUrl}/signup/checkusername/${username}`);
-              return response.data
+                if(username !== props.user.username) {
+                    const response = await axios.get(`${baseUrl}/signup/checkusername/${username}`);
+                    return response.data;
+                }
+                return (username === props.user.username);
             }
           ),
         email: Yup.string()
@@ -62,21 +85,31 @@ export const Account = (props) => {
             "checkEmailUnique", 
             "This email is already registered", 
             async (email) => { 
-              const response = await axios.get(`${baseUrl}/signup/checkemail/${email}`);
-              return response.data
+                if(email !== props.user.email) {
+                    const response = await axios.get(`${baseUrl}/signup/checkemail/${email}`);
+                    return response.data;
+                }
+                return (email === props.user.email);
             }
           )
     });
 
-    const handleUpdateAccount = () => {
-
+    const handleUpdateAccount = async (formData) => {
+        setLoading(true);
+        const { username, email } = formData
+        const response = await userService.updateAccount({ username, email });
+        if (response) {
+            dispatch(loadUser({}));
+        }
+        setLoading(false);
+        setMessage("Account updated");
     }
 
     return (
         <div>
             <OverlayTrigger placement="left" overlay={(renderTooltip())}>
                 <button id={props.user._id} type="button" className="btn p-0 m-1" onClick={handleShow}>
-                    <img className="border border-primary rounded-circle" src={props.user.profilePic.image} height="55" width="55" alt="Account info" />
+                    <img className="border border-2 border-primary rounded-circle" src={props.user.profilePic.image} height="65" width="65" alt="Account info" />
                 </button>
             </OverlayTrigger>
 
@@ -93,11 +126,23 @@ export const Account = (props) => {
                     onSubmit={handleUpdateAccount}
                  >
                     <Form className="p-3">
-                        {!loading && (
+                        {message && (
+                            <div className="mb-2">
+                                <div className="alert alert-success" role="alert">
+                                    {message}
+                                </div>
+                            </div>
+                        )}
                         <div className="mb-2">
                             <div className="mb-2">
                             <label htmlFor="username">Username</label>
-                            <Field name="username" type="text" className="form-control" />
+                            <Field 
+                                name="username" 
+                                type="text" 
+                                className="form-control" 
+                                value={username} 
+                                onChange={onChange}
+                            />
                             <ErrorMessage
                                 name="username"
                                 component="div"
@@ -107,7 +152,13 @@ export const Account = (props) => {
 
                             <div className="mb-2">
                             <label htmlFor="email">Email</label>
-                            <Field name="email" type="email" className="form-control" />
+                            <Field 
+                                name="email"
+                                type="email" 
+                                className="form-control" 
+                                value={email}
+                                onChange={onChange}
+                            />
                             <ErrorMessage
                                 name="email"
                                 component="div"
@@ -117,7 +168,7 @@ export const Account = (props) => {
                         
                             <div className="mb-2 row">
                                 <div className="col-6">
-                                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                                    <button type="submit" className="btn btn-primary btn-block" disabled={loading || ((username === props.user.username) && (email === props.user.email))}>
                                         {loading && (
                                             <span className="spinner-border spinner-border-sm"></span>
                                         )}
@@ -126,10 +177,8 @@ export const Account = (props) => {
                                 </div>
                             </div>
                         </div>
-                        )}
                     </Form>
-                    </Formik>
-
+                </Formik>
             </Modal>
         </div>
     )

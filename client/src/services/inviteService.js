@@ -3,7 +3,7 @@ import baseUrl from "../util/baseUrl";
 import authHeader from "../util/authHeader";
 
 // Accept invitation
-const acceptInvite = async (tripId) => {
+const accept = async (tripId) => {
     try {
         const authToken = authHeader();
         const response = await axios
@@ -15,7 +15,7 @@ const acceptInvite = async (tripId) => {
 };
 
 // Decline invitation
-const declineInvite = async tripId => {
+const decline = async tripId => {
     try {
         const authToken = authHeader();
         const response = await axios
@@ -26,6 +26,6 @@ const declineInvite = async tripId => {
     }
 };
 
-const inviteService = { acceptInvite, declineInvite }
+const inviteService = { accept, decline }
 export default inviteService;
 

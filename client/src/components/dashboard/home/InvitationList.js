@@ -16,11 +16,11 @@ export const InvitationList = (props) => {
     });
 
     const handleAccept = async (e) => {
-        await inviteService.acceptInvite(e.target.value);
+        await inviteService.accept(e.target.value);
         await dispatch(loadUser({}));
     }
     const handleDecline = async (e) => {
-        await inviteService.acceptInvite(e.target.value);
+        await inviteService.decline(e.target.value);
         await dispatch(loadUser({}));
     }
     return (
@@ -52,15 +52,15 @@ export const InvitationList = (props) => {
                         return (
                             <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto" key={invite._id}>
                                 <div className="align-middle">
-                                    <img className="rounded mt-2" src={invite.icon.image} width={70} height={70} alt={invite.icon.image} />
+                                    <img className="rounded mt-2 border secondary-border" src={invite.icon.image} width={70} height={70} alt={invite.icon.image} />
                                 </div>
                                 <div className="ms-2 container-fluid">
                                     <div className="row">
                                         <div className="col-lg-3">
-                                            {invite.name}
+                                        <i class="bi bi-card-text primary"></i> {invite.name}
                                         </div>
                                         <div className="col-lg-7">
-                                            {startDate} {startTime} - {endDate} {endTime} {endTzName}
+                                            <i class="bi bi-calendar-check-fill primary"></i> {startDate} {startTime} - {endDate} {endTime} {endTzName}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
                                             {matches && <button className="btn btn-success" value={invite._id} onClick={handleAccept}>Accept</button>}
@@ -68,10 +68,10 @@ export const InvitationList = (props) => {
                                     </div>
                                     <div className="row">
                                         <div className="col-lg-3">
-                                            {invite.location}
+                                            <i class="bi bi-geo-alt-fill primary"></i> {invite.location}
                                         </div>
                                         <div className="col-lg-7">
-                                            ${invite.cost}
+                                            <i class="bi bi-piggy-bank-fill primary"></i> ${invite.cost}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
                                             {!matches && <button className="btn btn-success me-1" value={invite._id} onClick={handleAccept}>Accept</button>}

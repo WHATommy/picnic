@@ -15,10 +15,13 @@ export const TripIcons = (props) => {
         dispatch(loadTrip({tripId: e.target.id}))
     }
 
+    const inActive = "rounded";
+    const active = "rounded border border-3 border-primary"
+
     return (
         <OverlayTrigger placement="bottom" overlay={(renderTooltip())}>
             <button type="button" className="btn p-0 m-1" onClick={handleGetTrip}>
-                <img id={props.tripId} className="rounded" src={props.tripIcon} height="60" width="60" alt="Trip" />
+                <img id={props.tripId} className={props.tripId === props.currentTrip ? active : inActive} src={props.tripIcon} height="60" width="60" alt="Trip" />
             </button>
         </OverlayTrigger>
     )

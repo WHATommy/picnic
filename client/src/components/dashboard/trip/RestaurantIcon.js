@@ -9,7 +9,7 @@ import { loadTrip } from "../../../slices/trip";
 export const RestaurantIcon = (props) => {
     const dispatch = useDispatch();
     const renderTooltip = () => (
-        <Tooltip>Restaurant</Tooltip>
+        <Tooltip>Restaurants</Tooltip>
     );
 
     const handleGetHousing = (e) => {

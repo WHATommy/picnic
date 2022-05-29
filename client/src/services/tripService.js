@@ -18,7 +18,6 @@ const addTrip = async (image, name, location, startDate, endDate) => {
 const getTrip = async (tripId) => {
     try {
         const authToken = authHeader();
-        console.log(tripId)
         const response = await axios
             .get(`${baseUrl}/trip/${tripId}`, { headers: { "token": authToken } } );
         return response.data;

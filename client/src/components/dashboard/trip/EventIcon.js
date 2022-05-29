@@ -8,7 +8,7 @@ import { loadTrip } from "../../../slices/trip";
 export const EventIcon = (props) => {
     const dispatch = useDispatch();
     const renderTooltip = () => (
-        <Tooltip>Event</Tooltip>
+        <Tooltip>Events</Tooltip>
     );
 
     const handleGetHousing = (e) => {

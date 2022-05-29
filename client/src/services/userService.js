@@ -37,10 +37,22 @@ const getUserInvitations = async (token) => {
     };
 }
 
+const updateAccount = async ({username, email}) => {
+    try {
+        const authToken = authHeader();
+        await axios.put(`${baseUrl}/user/`, {username, email}, { headers: { "token": authToken } });
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
 const userService = {
     getUser,
     getUserTrips,
-    getUserInvitations
+    getUserInvitations,
+    updateAccount
 }
 export default userService;
 
