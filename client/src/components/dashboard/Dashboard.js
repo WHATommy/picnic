@@ -31,7 +31,7 @@ const Dashboard = () => {
             </div>
             <div>
                 {!(trip._id) &&
-                    user.invitations ? 
+                    (user.invitations ? 
                         <InvitationList invitations={user.invitations} />
                         : 
                         (
@@ -41,6 +41,7 @@ const Dashboard = () => {
                                 <p>No one has invited you to a trip yet...</p> 
                             </>
                         )
+                    )
                 }
                 {trip._id && 
                     <TripDashboard trip={trip} />

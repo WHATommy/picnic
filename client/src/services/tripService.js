@@ -14,6 +14,7 @@ const addTrip = async (image, name, location, startDate, endDate) => {
     }
 };
 
+// Get trip
 const getTrip = async (tripId) => {
     try {
         const authToken = authHeader();

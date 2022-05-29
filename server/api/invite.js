@@ -102,7 +102,6 @@ Router.put(
             // Filter out the targeted user id in the trip's list of pending users and add the user id into the list of attendees
             const pendingUsers = trip.pendingUsers.filter(user => user._id.valueOf() !== userId.valueOf());
             trip.attendees.unshift(userId);
-            console.log(trip.attendees)
 
             await axios.put(`${baseUrl}/trip/${tripId}`, { attendees: trip.attendees, pendingUsers }, { headers: { "token": req.header("token") } });
             await axios.post(`${baseUrl}/attendee/${tripId}/${userId}`, {}, { headers: { "token": req.header("token") } });

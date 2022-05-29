@@ -1,6 +1,11 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react';
+import { useDispatch } from "react-redux";
+import inviteService from '../../../services/inviteService';
+import { loadUser } from '../../../slices/user';
 
 export const InvitationList = (props) => {
+    const dispatch = useDispatch();
+
     // State for window size
     const mediaMatch = window.matchMedia('(min-width: 991px)');
     const [matches, setMatches] = useState(mediaMatch.matches);
@@ -10,11 +15,13 @@ export const InvitationList = (props) => {
         return () => mediaMatch.removeEventListener("change", handler);
     });
 
-    const handleAccept = () => {
-
+    const handleAccept = async (e) => {
+        await inviteService.acceptInvite(e.target.value);
+        await dispatch(loadUser({}));
     }
-    const handleDecline = () => {
-        
+    const handleDecline = async (e) => {
+        await inviteService.acceptInvite(e.target.value);
+        await dispatch(loadUser({}));
     }
     return (
         <div>
@@ -56,7 +63,7 @@ export const InvitationList = (props) => {
                                             {startDate} {startTime} - {endDate} {endTime} {endTzName}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
-                                            {matches && <button className="btn btn-success">Accept</button>}
+                                            {matches && <button className="btn btn-success" value={invite._id} onClick={handleAccept}>Accept</button>}
                                         </div>
                                     </div>
                                     <div className="row">
@@ -67,8 +74,8 @@ export const InvitationList = (props) => {
                                             ${invite.cost}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
-                                            {!matches && <button className="btn btn-success me-1">Accept</button>}
-                                            <button className="btn btn-danger">Decline</button>
+                                            {!matches && <button className="btn btn-success me-1" value={invite._id} onClick={handleAccept}>Accept</button>}
+                                            <button className="btn btn-danger" value={invite._id} onClick={handleDecline}>Decline</button>
                                         </div>
                                     </div>
                                 </div>
