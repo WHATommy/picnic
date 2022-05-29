@@ -20,12 +20,14 @@ const Register = () => {
   }, [dispatch]);
 
   const initialValues = {
-    image: null,
     username: "",
     email: "",
     password: "",
     confirmPassword: ""
   };
+
+  const [image, setImage] = useState();
+  const [imageError, setImageError] = useState(false);
 
   const validationSchema = Yup.object().shape({
     username: Yup.string()
@@ -73,7 +75,7 @@ const Register = () => {
   });
 
   const handleRegister = (formValue) => {
-    const { image, username, email, password, confirmPassword } = formValue;
+    const { username, email, password, confirmPassword } = formValue;
 
     setLoading(false);
 
@@ -99,6 +101,41 @@ const Register = () => {
           <Form>
             {!loading && (
               <div>
+
+                <div className="mb-2">
+                  {imageError && (
+                    <div className="mb-2">
+                        <div className="alert alert-danger" role="alert">
+                            Image file size is too large. Choose a file that is 3MB or lower.
+                        </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-2">
+                  <label htmlFor="username">Image</label>
+                  <input id="file" name="file" type="file" 
+                    onChange={(event) => {
+                        let file = event.currentTarget.files[0];
+                        if(file.size <= (3 * (1024 * 1024))) {
+                            setImageError(false);
+                            let reader = new FileReader();
+                            reader.onloadend = () => {
+                                setImage(reader.result);
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            setImage(null);
+                            setImageError(true);
+                        }
+                    }} className="form-control" />
+                    <ErrorMessage
+                        name="image"
+                        component="div"
+                        className="text-danger"
+                  />
+                </div>
+
                 <div className="mb-2">
                   <label htmlFor="username">Username</label>
                   <Field name="username" type="text" className="form-control" />
@@ -149,7 +186,7 @@ const Register = () => {
               
                 <div className="mb-2 row">
                   <div className="col-6">
-                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                    <button type="submit" className="btn btn-primary btn-block" disabled={loading || imageError}>
                       {loading && (
                         <span className="spinner-border spinner-border-sm"></span>
                       )}

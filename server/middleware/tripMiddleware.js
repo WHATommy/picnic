@@ -56,19 +56,19 @@ const isPoster = async (req, res, next) => {
     try {
         // Check if the user is the original poster for the event, restaurant, or housing item
         switch(req.baseUrl) {
-            case "/api/event":
+            case "/event":
                 const event = await Event.findById(eventId);
                 if (event.poster == req.user) {
                     return next();
                 }
                 break;
-            case "/api/restaurant":
+            case "/restaurant":
                 const restaurant = await Restaurant.findById(restaurantId);
                 if (restaurant.poster == req.user) {
                     return next();
                 }
                 break;
-            case "/api/housing":
+            case "/housing":
                 const housing = await Housing.findById(housingId);
                 if (housing.poster == req.user) {
                     return next();

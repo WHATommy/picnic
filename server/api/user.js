@@ -214,8 +214,8 @@ Router.put(
             // Update the user structure
             username ? user.username = username : null;
             email ? user.email = email : null;
-            trips ? user.trips = trips : null;
-            invitations ? user.invitations = invitations : null;
+            user.trips = trips;
+            user.invitations = invitations
 
             // Save the user
             await user.save();

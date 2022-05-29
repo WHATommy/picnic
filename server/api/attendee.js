@@ -83,7 +83,7 @@ Router.get(
     }
 );
 
-// Route    POST api/attendee/:tripId/:userId
+// Route    POST attendee/:tripId/:userId
 // Desc     Add a user into the trip's attendees
 // Access   Private
 Router.post(

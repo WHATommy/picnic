@@ -30,6 +30,7 @@ Router.post(
 
         // Store request values into callable variables
         const {
+            image,
             name,
             location,
             startDate,
@@ -45,8 +46,8 @@ Router.post(
 
             let cloudinaryResult;
             // Upload image to cloudinary
-            if(req.file) {
-                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            if(image) {
+                cloudinaryResult = await cloudinary.uploader.upload(image);
             }
             
             // Trip structure
@@ -67,9 +68,10 @@ Router.post(
             });
 
             // Save the trip in the 'trip' collection and the trip id into the user's list of trips
-            await newTrip.save().then(trip => {
+            await newTrip.save().then(async trip => {
                 user.trips.unshift(trip._id);
                 user.save().then(res.status(200).json(trip));
+                await axios.post(`${baseUrl}/attendee/${trip._id}/${user._id}`, {}, { headers: { "token": req.header("token") } });
             });
 
         } catch (err) {
@@ -85,7 +87,6 @@ Router.post(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -100,6 +101,32 @@ Router.get(
             }
 
             return res.status(200).json(trip);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+)
+
+// Route    POST api/trip/all
+// Desc     Retrieve a trip's information
+// Access   Private
+Router.post(
+    "/all",
+    authMiddleware,
+    async(req, res) => {
+        const {
+            tripIds
+        } = req.body;
+
+        try {
+            const trips = await Trip.find({ _id : { $in: tripIds } });
+
+            if(!trips) {
+                return res.status(404).send("The trips does not exist");
+            }
+
+            return res.status(200).json(trips);
         } catch (err) {
             console.log(err);
             return res.status(500).send("Server error");
@@ -312,8 +339,8 @@ Router.delete(
                     userTrips = user.trips.filter(userTrip => userTrip._id.valueOf() != trip._id.valueOf());
                 })
                 .then(async () => {
-                    await axios.put(`${baseUrl}/api/user`, { userId, trips: userTrips }, { headers: { "token": req.header("token") } });
-                    await axios.delete(`${baseUrl}/api/attendee/${tripId}/${userId}`, {}, { headers: { "token": req.header("token") } });
+                    await axios.put(`${baseUrl}/user/${userId}`, { trips: userTrips }, { headers: { "token": req.header("token") } });
+                    await axios.delete(`${baseUrl}/attendee/${tripId}/${userId}`, {}, { headers: { "token": req.header("token") } });
                 });
             });
 

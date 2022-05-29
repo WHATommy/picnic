@@ -17,6 +17,7 @@ import { loadUser } from './slices/user';
 // Styling
 import "bootstrap/dist/css/bootstrap.min.css";
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import "@popperjs/core";
 import "./App.css";
 
 // Check if user has token
@@ -32,21 +33,23 @@ const App = () => {
   }, []);
 
   return(
-    <BrowserRouter>
-      <Routes>
-        
-        <Route path="/" element={<PublicRoute/>}>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>       
+    <div className="font-link">
+      <BrowserRouter>
+        <Routes>
+          
+          <Route path="/" element={<PublicRoute/>}>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>       
 
-        <Route path="/" element={<PrivateRoute/>}>
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route> 
+          <Route path="/" element={<PrivateRoute/>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route> 
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </div>
   )
 }
 

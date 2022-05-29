@@ -7,9 +7,10 @@ export const loadUser = createAsyncThunk(
     "user",
     async ({ token }, thunkAPI) => {
         try {
+            const info = await userService.getUser(token);
             const trips = await userService.getUserTrips(token);
             const invitations = await userService.getUserInvitations(token);
-            return { trips, invitations };
+            return { info, trips, invitations: invitations.data };
         } catch (error) {
             const message =
                 (error.response &&
@@ -23,13 +24,14 @@ export const loadUser = createAsyncThunk(
     }
 )
 
-const initialState = { trips: null, invitations: null };
+const initialState = { info: null, trips: null, invitations: null };
 
 const userSlice = createSlice({
     name: "user",
     initialState,
     extraReducers: {
         [loadUser.fulfilled]: (state, action) => {
+            state.info = action.payload.info;
             state.trips = action.payload.trips;
             state.invitations = action.payload.invitations;
         }

@@ -62,6 +62,7 @@ Router.post(
 
         // Store request values into callable variables
         const {
+            image,
             username,
             email,
             password
@@ -94,8 +95,8 @@ Router.post(
             // Initialize empty cloudinary result
             let cloudinaryResult;
             // Upload image to cloudinary
-            if(req.file) {
-                cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            if(image) {
+                cloudinaryResult = await cloudinary.uploader.upload(image);
             }
 
             // User structure
