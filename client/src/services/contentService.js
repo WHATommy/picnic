@@ -50,11 +50,13 @@ const getAllAttendees = async (tripId) => {
     };
 };
 
-const getContentAttendees = async (userIds) => {
+const getContentAttendees = async (tripId, contentId, contentType) => {
     try {
         const authToken = authHeader();
+        const content = await axios
+            .get(`${baseUrl}/${contentType}/${tripId}/${contentId}`, { headers: { "token": authToken } });
         const response = await axios
-            .post(`${baseUrl}/user/list`, { userIds }, { headers: { "token": authToken } });
+            .post(`${baseUrl}/user/list`, { userIds: content.data.attendees }, { headers: { "token": authToken } });
         return response.data;
     } catch (error) {
         console.log(error);
@@ -64,9 +66,9 @@ const getContentAttendees = async (userIds) => {
 const joinContent = async (tripId, contentId, userId, content) => {
     try {
         const authToken = authHeader();
-        await axios
+        const response = await axios
             .put(`${baseUrl}/${content}/${tripId}/${contentId}/${userId}/join`, {}, { headers: { "token": authToken } });
-        return true;
+        return response.data;
     } catch (error) {
         return false;
     };
@@ -75,9 +77,9 @@ const joinContent = async (tripId, contentId, userId, content) => {
 const leaveContent = async (tripId, contentId, userId, content) => {
     try {
         const authToken = authHeader();
-        await axios
+        const response = await axios
             .put(`${baseUrl}/${content}/${tripId}/${contentId}/${userId}/leave`, {}, { headers: { "token": authToken } });
-        return true;
+        return response.data;
     } catch (error) {
         console.log(error);
         return false;

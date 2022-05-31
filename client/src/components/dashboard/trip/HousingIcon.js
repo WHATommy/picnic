@@ -1,20 +1,23 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
 // Slices
-import { loadAllContent } from '../../../slices/content';
-import { loadUser } from '../../../slices/user';
+import { emptyContent } from '../../../slices/content';
 
 export const HousingIcon = (props) => {
+    let navigate = useNavigate();
+
     const dispatch = useDispatch();
     const renderTooltip = () => (
         <Tooltip>Housings</Tooltip>
     );
 
-    const handleGetHousing = (e) => {
-        dispatch(loadAllContent({ tripId: props.tripId, contentType: "housing" }));
-        dispatch(loadUser({}));
+    const handleGetHousing = () => {
+        dispatch(emptyContent({}));
+        const url = `/dashboard/${props.userId}/${props.tripId}/housing`;
+        navigate(url);
     }
 
     const inActive = "bi bi-house";

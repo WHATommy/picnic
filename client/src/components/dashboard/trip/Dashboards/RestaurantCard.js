@@ -26,7 +26,7 @@ export const RestaurantCard = (props) => {
         setShow(false);
     };
     const handleShow = (e) => {
-        dispatch(loadContentAttendees({attendees: props.restaurant.attendees}));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.restaurant._id, contentType: "restaurant" }));
         e.preventDefault();
         setShow(true);
     };
@@ -35,6 +35,7 @@ export const RestaurantCard = (props) => {
         setLoading(true);
         await contentService.joinContent(tripId, props.restaurant._id, props.userId, "restaurant");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.restaurant._id, contentType: "restaurant" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({ tripId: tripId }));
         setLoading(false);
@@ -44,6 +45,7 @@ export const RestaurantCard = (props) => {
         setLoading(true);
         await contentService.leaveContent(tripId, props.restaurant._id, props.userId, "restaurant");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.restaurant._id, contentType: "restaurant" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({tripId: tripId}));
         setLoading(false);
@@ -126,6 +128,7 @@ export const RestaurantCard = (props) => {
                                 return (
                                     <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto">
                                         <img className="rounded-circle" src={attendee.profilePic.image} height="65" width="65" alt={attendee.name} />
+                                        <h3 className="mt-3 ms-3">{attendee.username}</h3>
                                     </li>
                                 )
                             })

@@ -26,7 +26,7 @@ export const EventCard = (props) => {
         setShow(false);
     };
     const handleShow = (e) => {
-        dispatch(loadContentAttendees({attendees: props.event.attendees}));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
         e.preventDefault();
         setShow(true);
     };
@@ -35,6 +35,7 @@ export const EventCard = (props) => {
         setLoading(true);
         await contentService.joinContent(tripId, props.event._id, props.userId, "event");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({ tripId: tripId }));
         setLoading(false);
@@ -44,6 +45,7 @@ export const EventCard = (props) => {
         setLoading(true);
         await contentService.leaveContent(tripId, props.event._id, props.userId, "event");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({tripId: tripId}));
         setLoading(false);
@@ -120,12 +122,14 @@ export const EventCard = (props) => {
             </Modal.Header>
             <Modal.Body>
                 <ul className="list-group">
+                    {console.log(eventAttendee)}
                     {
                         eventAttendee && (
                             eventAttendee.map(attendee => {
                                 return (
                                     <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto">
                                         <img className="rounded-circle" src={attendee.profilePic.image} height="65" width="65" alt={attendee.name} />
+                                        <h3 className="mt-3 ms-3">{attendee.username}</h3>
                                     </li>
                                 )
                             })

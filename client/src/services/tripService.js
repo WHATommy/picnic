@@ -39,7 +39,7 @@ const getPersonalCost = async (tripId, userId) => {
 }
 
 // Get user's list of contents they are attending
-const getAttendingContent = async (tripId, userId) => {
+const getUserAttendingContent = async (tripId, userId) => {
     try {
         const authToken = authHeader();
         const response = await axios
@@ -50,6 +50,6 @@ const getAttendingContent = async (tripId, userId) => {
     };
 }
 
-const tripService = { addTrip, getTrip, getPersonalCost, getAttendingContent }
+const tripService = { addTrip, getTrip, getPersonalCost, getUserAttendingContent }
 export default tripService;
 

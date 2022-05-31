@@ -26,7 +26,7 @@ export const HousingCard = (props) => {
         setShow(false);
     };
     const handleShow = (e) => {
-        dispatch(loadContentAttendees({attendees: props.housing.attendees}));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
         e.preventDefault();
         setShow(true);
     };
@@ -35,6 +35,7 @@ export const HousingCard = (props) => {
         setLoading(true);
         await contentService.joinContent(tripId, props.housing._id, props.userId, "housing");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({ tripId: tripId }));
         setLoading(false);
@@ -44,6 +45,7 @@ export const HousingCard = (props) => {
         setLoading(true);
         await contentService.leaveContent(tripId, props.housing._id, props.userId, "housing");
         dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
         dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({tripId: tripId}));
         setLoading(false);
@@ -126,6 +128,7 @@ export const HousingCard = (props) => {
                                 return (
                                     <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto">
                                         <img className="rounded-circle" src={attendee.profilePic.image} height="65" width="65" alt={attendee.name} />
+                                        <h3 className="mt-3 ms-3">{attendee.username}</h3>
                                     </li>
                                 )
                             })

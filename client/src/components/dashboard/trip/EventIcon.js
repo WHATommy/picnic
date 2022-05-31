@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { emptyContent } from '../../../slices/content';
 
 export const EventIcon = (props) => {
-    console.log(props)
     let navigate = useNavigate();
 
     const dispatch = useDispatch();

@@ -40,10 +40,9 @@ export const loadAllContent = createAsyncThunk(
 
 export const loadContentAttendees = createAsyncThunk(
     "contentAttendees",
-    async ({attendees}, thunkAPI) => {
+    async ({ tripId, contentId, contentType }, thunkAPI) => {
         try {
-            let attendees;
-            attendees = await contentService.getContentAttendees(attendees);
+            const attendees = await contentService.getContentAttendees(tripId, contentId, contentType);
             return { attendees };
         } catch (error) {
             const message =

@@ -58,7 +58,6 @@ Router.post(
         try {
             // Find a user inside the database
             const users = await User.find({ _id : { $in: userIds } });
-
             if(!users) {
                 return res.status(404).send("User does not exist");
             }
