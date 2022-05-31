@@ -35,7 +35,7 @@ Router.get(
             const attendees = await Attendee.find({tripId: tripId});
             
             // If attendee does not exist, return failure
-            if(!attendee) {
+            if(!attendees) {
                 return res.status(404).json("Attendee does not exist");
             }
 
@@ -43,7 +43,6 @@ Router.get(
             return res.status(200).json(attendees);
 
         } catch (err) {
-            //console.log(err);
             return res.status(500).send("Server error");
         }
     }
@@ -64,10 +63,8 @@ Router.get(
         } = req.params;
 
         try {
-
             // Find attendee in attendees database
             const attendee = await Attendee.findOne({tripId: tripId, userId: userId});
-
             // If attendee does not exist, return failure
             if(!attendee) {
                 return res.status(404).json("Attendee does not exist");
@@ -146,17 +143,19 @@ Router.put(
 
             // Get the sum of the events cost as long as they are attending atleast one event
             if(attendee.attending.events.length > 0) {
-                eventCost = await attendee.attending.events.reduce(async (sum, eventId) => {
-                    const event = await Event.findById(eventId);
-                    return sum += event.cost;
+                const eventIds = Object.values(attendee.attending.events);
+                const events = await Event.find(({ _id : { $in: eventIds } }));
+                const sumCost = await events.reduce(async (sum, event) => {
+                    return sum + event.cost;
                 }, 0);
+                eventCost += sumCost;
             }
 
             // Get the sum of the housings cost as long as they are attending atleast one housing
             if(attendee.attending.housings.length > 0) {
                 housingCost = await attendee.attending.housings.reduce(async (sum, housingId) => {
                     const housing = await Housing.findById(housingId);
-                    return sum += housing.cost;
+                    return sum + housing.cost;
                 }, 0);
             }
             
@@ -164,12 +163,13 @@ Router.put(
             if(attendee.attending.restaurants.length > 0) {
                 restaurantCost = await attendee.attending.restaurants.reduce(async (sum, restaurantId) => {
                     const restaurant = await Restaurant.findById(restaurantId);
-                    return sum += restaurant.cost;
+                    return sum + restaurant.cost;
                 }, 0);
             }
 
             // Save the sum of events, housings, and restaurants cost into attendee's personal cost
             attendee.personalCost = eventCost + housingCost + restaurantCost;
+            console.log(eventCost, housingCost, restaurantCost)
 
             // Save updated attendee in the database
             await attendee.save();
@@ -178,7 +178,7 @@ Router.put(
             return res.status(200).json(attendee);
 
         } catch (err) {
-            console.log(err);
+            //console.log(err);
             return res.status(500).send("Server error");
         }
     }

@@ -1,7 +1,8 @@
 const Trip = require("../models/TripModel");
 const Event = require("../models/EventModel");
 const Restaurant = require("../models/RestaurantModel");
-const Housing = require("../models/HousingModel")
+const Housing = require("../models/HousingModel");
+const Attendee = require("../models/AttendeeModel");
 
 const isOwner = async (req, res, next) => {
     const {
@@ -97,11 +98,7 @@ const isAttendee = async (req, res, next) => {
         }
 
         // Check if the user is a attendee and a moderator for the trip
-        const isAttending = trip.attendees.some(attendeeId => {
-            attendeeId === req.user.valueOf()
-        });
-
-        console.log(isAttending)
+        const isAttending = Attendee.findOne({ tripId: tripId, userId: req.user})
 
         if(!isAttending) {
             return res.status(401).json({ error: "Access denied" });

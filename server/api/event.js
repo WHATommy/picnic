@@ -114,7 +114,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isOwner && tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -194,7 +194,6 @@ Router.put(
 
             return res.status(200).json(event);
         } catch (err) {
-            console.log(err);
             return res.status(500).send("Server error");
         }
     }
@@ -258,7 +257,6 @@ Router.put(
            
             return res.status(200).json(event);
         } catch (err) {
-            console.log(err);
             return res.status(500).send("Server error");
         }
     }

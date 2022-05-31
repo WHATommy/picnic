@@ -11,7 +11,7 @@ const addTrip = async (image, name, location, startDate, endDate) => {
         return response;
     } catch (error) {
         console.log(error)
-    }
+    };
 };
 
 // Get trip
@@ -23,9 +23,33 @@ const getTrip = async (tripId) => {
         return response.data;
     } catch (error) {
         console.log(error)
-    }    
+    }    ;
 };
 
-const tripService = { addTrip, getTrip }
+// Get user's personal cost for a trip
+const getPersonalCost = async (tripId, userId) => {
+    try {
+        const authToken = authHeader();
+        const response = await axios
+            .get(`${baseUrl}/attendee/${tripId}/${userId}`, { headers: { "token": authToken } } );
+        return response.data.personalCost;
+    } catch (error) {
+        console.log(error)
+    };
+}
+
+// Get user's list of contents they are attending
+const getAttendingContent = async (tripId, userId) => {
+    try {
+        const authToken = authHeader();
+        const response = await axios
+            .get(`${baseUrl}/attendee/${tripId}/${userId}`, { headers: { "token": authToken } } );
+        return response.data;
+    } catch (error) {
+        console.log(error)
+    };
+}
+
+const tripService = { addTrip, getTrip, getPersonalCost, getAttendingContent }
 export default tripService;
 

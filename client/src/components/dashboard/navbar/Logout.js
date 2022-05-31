@@ -22,7 +22,7 @@ export const Logout = () => {
         <div>
             <OverlayTrigger placement="left" overlay={(renderTooltip())}>
                 <button id="logout" type="button" className="btn p-0 m-1" onClick={logout}>
-                    <i className="bi bi-door-closed" style={{fontSize: 40}}></i>
+                    <i className="bi bi-arrow-left-square" style={{fontSize: 40, color: "#e63737"}}></i>
                 </button>
             </OverlayTrigger>
         </div>

@@ -6,24 +6,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadAllContent } from '../../../slices/content';
 import { loadUser } from '../../../slices/user';
 
-export const EventIcon = (props) => {
+export const LeaveIcon = (props) => {
     const dispatch = useDispatch();
     const renderTooltip = () => (
-        <Tooltip>Events</Tooltip>
+        <Tooltip>Leave trip</Tooltip>
     );
 
-    const handleGetHousing = () => {
-        dispatch(loadAllContent({ tripId: props.tripId, contentType: "event" }));
+    const handleLeaveTrip = (e) => {
+        dispatch(loadAllContent({}));
         dispatch(loadUser({}));
     }
 
-    const inActive = "bi bi-balloon";
-    const active = "bi bi-balloon primary";
-
     return (
         <OverlayTrigger placement="bottom" overlay={(renderTooltip())}>
-            <button type="button" className="btn p-0 m-1" onClick={handleGetHousing}>
-                <i className={props.contentType === "event" ? active : inActive} style={{fontSize: "40px"}}></i>
+            <button type="button" className="btn p-0 m-1" onClick={handleLeaveTrip}>
+                <i className="bi bi-arrow-left-square" style={{fontSize: "40px", color: "#e63737"}}></i>
             </button>
         </OverlayTrigger>
     )

@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoRestaurantOutline } from "react-icons/io5"
 
 // Slices
-import { loadTrip } from "../../../slices/trip";
+import { loadAllContent } from '../../../slices/content';
+import { loadUser } from '../../../slices/user';
 
 export const RestaurantIcon = (props) => {
     const dispatch = useDispatch();
@@ -13,13 +14,17 @@ export const RestaurantIcon = (props) => {
     );
 
     const handleGetHousing = (e) => {
-        //dispatch(loadTrip({tripId: e.target.id}))
+        dispatch(loadAllContent({ tripId: props.tripId, contentType: "restaurant" }));
+        dispatch(loadUser({}));
     }
+
+    const inActive = "bi bi-shop";
+    const active = "bi bi-shop primary";
 
     return (
         <OverlayTrigger placement="bottom" overlay={(renderTooltip())}>
             <button type="button" className="btn p-0 m-1" onClick={handleGetHousing}>
-                <i class="bi bi-shop" style={{fontSize: "40px"}}></i>
+                <i className={props.contentType === "restaurant" ? active : inActive} style={{fontSize: "40px"}}></i>
             </button>
         </OverlayTrigger>
     )

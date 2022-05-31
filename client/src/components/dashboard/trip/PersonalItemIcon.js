@@ -6,24 +6,24 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadAllContent } from '../../../slices/content';
 import { loadUser } from '../../../slices/user';
 
-export const EventIcon = (props) => {
+export const PersonalItemIcon = (props) => {
     const dispatch = useDispatch();
     const renderTooltip = () => (
-        <Tooltip>Events</Tooltip>
+        <Tooltip>Personal Items</Tooltip>
     );
 
-    const handleGetHousing = () => {
-        dispatch(loadAllContent({ tripId: props.tripId, contentType: "event" }));
+    const handleGetPersonalItem = () => {
+        dispatch(loadAllContent({ tripId: props.tripId, contentType: "personalItem" }));
         dispatch(loadUser({}));
     }
 
-    const inActive = "bi bi-balloon";
-    const active = "bi bi-balloon primary";
+    const inActive = "bi bi bi-bag";
+    const active = "bi bi bi-bag primary";
 
     return (
         <OverlayTrigger placement="bottom" overlay={(renderTooltip())}>
-            <button type="button" className="btn p-0 m-1" onClick={handleGetHousing}>
-                <i className={props.contentType === "event" ? active : inActive} style={{fontSize: "40px"}}></i>
+            <button type="button" className="btn p-0 m-1" onClick={handleGetPersonalItem}>
+                <i className={props.contentType === "personalItem" ? active : inActive} style={{fontSize: "40px"}}></i>
             </button>
         </OverlayTrigger>
     )

@@ -1,9 +1,10 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
+import { emptyContent } from '../../../slices/content';
 
 // Slices
-import { loadTrip } from "../../../slices/trip";
+import { loadTrip, loadAttendingContent, loadPersonalCost } from "../../../slices/trip";
 
 export const TripIcons = (props) => {
     const dispatch = useDispatch();
@@ -12,7 +13,10 @@ export const TripIcons = (props) => {
     );
 
     const handleGetTrip = (e) => {
-        dispatch(loadTrip({tripId: e.target.id}))
+        dispatch(loadAttendingContent({ tripId: e.target.id, userId: props.userId }));
+        dispatch(loadPersonalCost({tripId: e.target.id, userId: props.userId}));
+        dispatch(loadTrip({tripId: e.target.id}));
+        dispatch(emptyContent({}));
     }
 
     const inActive = "rounded";

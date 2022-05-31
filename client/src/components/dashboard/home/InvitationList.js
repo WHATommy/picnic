@@ -39,7 +39,7 @@ export const InvitationList = (props) => {
                             }
                         );
                         const endDate = new Date(invite.endDate).toLocaleDateString(
-                            'en-gb',
+                            'en-US',
                             {
                             year: 'numeric',
                             month: 'long',
@@ -57,10 +57,10 @@ export const InvitationList = (props) => {
                                 <div className="ms-2 container-fluid">
                                     <div className="row">
                                         <div className="col-lg-3">
-                                        <i class="bi bi-card-text primary"></i> {invite.name}
+                                        <i className="bi bi-card-text primary"></i> {invite.name}
                                         </div>
                                         <div className="col-lg-7">
-                                            <i class="bi bi-calendar-check-fill primary"></i> {startDate} {startTime} - {endDate} {endTime} {endTzName}
+                                            <i className="bi bi-calendar-check-fill primary"></i> {startDate} {startTime} - {endDate} {endTime} {endTzName}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
                                             {matches && <button className="btn btn-success" value={invite._id} onClick={handleAccept}>Accept</button>}
@@ -68,10 +68,10 @@ export const InvitationList = (props) => {
                                     </div>
                                     <div className="row">
                                         <div className="col-lg-3">
-                                            <i class="bi bi-geo-alt-fill primary"></i> {invite.location}
+                                            <i className="bi bi-geo-alt-fill primary"></i> {invite.location}
                                         </div>
                                         <div className="col-lg-7">
-                                            <i class="bi bi-piggy-bank-fill primary"></i> ${invite.cost}
+                                            <i className="bi bi-piggy-bank-fill primary"></i> ${invite.cost}
                                         </div>
                                         <div className="col-lg-2 col-12 text-end">
                                             {!matches && <button className="btn btn-success me-1" value={invite._id} onClick={handleAccept}>Accept</button>}
@@ -79,7 +79,6 @@ export const InvitationList = (props) => {
                                         </div>
                                     </div>
                                 </div>
-                                
                             </li>
                         )
                     })

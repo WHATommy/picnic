@@ -22,6 +22,7 @@ const Dashboard = () => {
     // Redux states
     const user = useSelector((state) => state.user);
     const trip = useSelector((state) => state.trip);
+    
     return (
         <div className="container-fluid">
             <div className="navbar navbar-expand-lg">
@@ -43,8 +44,9 @@ const Dashboard = () => {
                         )
                     )
                 }
-                {trip._id && 
-                    <TripDashboard trip={trip} />
+                {trip._id && user.info._id && (
+                        <TripDashboard trip={trip} userId={user.info._id} />
+                    )
                 }
             </div>
         </div>

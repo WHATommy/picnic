@@ -20,6 +20,45 @@ export const loadTrip = createAsyncThunk(
       return thunkAPI.rejectWithValue();
     }
   }
+);
+
+export const loadPersonalCost = createAsyncThunk(
+  "personalCost",
+  async ({ tripId, userId }, thunkAPI) => {
+    try {
+      const personalCost = await tripService.getPersonalCost(tripId, userId);
+      return { personalCost };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+);
+
+export const loadAttendingContent = createAsyncThunk(
+  "contentAttendee",
+  async ({ tripId, userId }, thunkAPI) => {
+    try {
+
+      const attendingContent = await tripService.getAttendingContent(tripId, userId);
+      return { attendingContent };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
 )
 
 // Initial State
@@ -36,7 +75,9 @@ const initialState = {
   restaurants: null,
   housings: null,
   attendees: null,
-  pendingUsers: null
+  pendingUsers: null,
+  personalCost: 0,
+  attending: null
 };
 
 // Auth Slice
@@ -73,6 +114,18 @@ const tripSlice = createSlice({
       state.housings = null;
       state.attendees = null;
       state.pendingUsers = null;
+    },
+    [loadPersonalCost.fulfilled]: (state, action) => {
+      state.personalCost = action.payload.personalCost;
+    },
+    [loadPersonalCost.rejected]: (state, action) => {
+      state.personalCost = 0;
+    },
+    [loadAttendingContent.fulfilled]: (state, action) => {
+      state.attending = action.payload.attendingContent;
+    },
+    [loadAttendingContent.rejected]: (state, action) => {
+      state.attending = null;
     }
   }
 });

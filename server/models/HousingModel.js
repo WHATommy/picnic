@@ -6,22 +6,20 @@ const HousingSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'trips'
     },
-    images: [
-        {
-            image: {
-                type: String
-            },
-            title: {
-                type: String
-            },
-            description: {
-                type: String
-            },
-            cloudinaryId: {
-                type: String
-            }
+    image: {
+        src: {
+            type: String
+        },
+        title: {
+            type: String
+        },
+        description: {
+            type: String
+        },
+        cloudinaryId: {
+            type: String
         }
-    ],
+    },
     poster: {
         type: Schema.Types.ObjectId
     },

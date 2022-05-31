@@ -44,6 +44,34 @@ Router.get(
     }
 )
 
+// Route    GET api/user
+// Desc     Retrieve information about a list of user
+// Access   Private
+Router.post(
+    "/list",
+    authMiddleware,
+    async(req, res) => {
+        const {
+            userIds
+        } = req.body;
+
+        try {
+            // Find a user inside the database
+            const users = await User.find({ _id : { $in: userIds } });
+
+            if(!users) {
+                return res.status(404).send("User does not exist");
+            }
+
+            return res.status(200).json(users);
+        } catch (error) {
+            console.log(err);
+            return res.status(500).send("Server error");
+        }
+
+    }
+)
+
 // Route    PUT api/user/password
 // Desc     Update a user's password
 // Access   Private

@@ -1,7 +1,9 @@
-import React from 'react'
-import { EventIcon } from './EventIcon'
-import { HousingIcon } from './HousingIcon'
-import { RestaurantIcon } from './RestaurantIcon'
+import React from 'react';
+import { AttendeeIcon } from './AttendeeIcon';
+import { EventIcon } from './EventIcon';
+import { HousingIcon } from './HousingIcon';
+import { RestaurantIcon } from './RestaurantIcon';
+import { LeaveIcon } from './LeaveIcon';
 
 export const TripNavbar = (props) => {
     return (
@@ -13,14 +15,22 @@ export const TripNavbar = (props) => {
             <h1 className="m-1 fw-light fs-2 text-center">{props.name}</h1>
             <div className="vr m-1"></div>
             <div className="text-center">
-                <HousingIcon />
-                <EventIcon />
-                <RestaurantIcon />
+                <HousingIcon tripId={props.tripId} contentType={props.contentType} />
+                <EventIcon tripId={props.tripId} contentType={props.contentType} />
+                <RestaurantIcon tripId={props.tripId} contentType={props.contentType} />
+                <AttendeeIcon tripId={props.tripId} contentType={props.contentType} />
             </div>
             <div className="vr m-1"></div>
+            <div>
+                <p className="m-1"><span className="fw-light"><i className="bi bi-geo-alt-fill primary"></i> {props.location}</span></p>
+                <p className="m-1"><span className="fw-light"><i className="bi bi-calendar-check-fill primary"></i> {props.startDate} - {props.endDate}</span></p>
+            </div>
+            <div>
+                <p className="m-1"><span className="fw-light"><i className="bi bi-cash-stack primary"></i> Trip Cost: ${props.cost}</span></p>
+                <p className="m-1"><span className="fw-light"><i className="bi bi-cash primary"></i> Personal Cost: ${props.personalCost}</span></p>
+            </div>
             <div className="ms-auto">
-                <p className="m-0">Trip Cost: <span className="fw-light">${props.cost}</span></p>
-                <p className="m-0">Personal Cost: <span className="fw-light">${props.cost}</span></p>
+                <LeaveIcon tripId={props.tripId} />
             </div>
         </div>
     )

@@ -80,7 +80,7 @@ export const AddTrip = () => {
     return (
         <div>
             <button onClick={handleShow} id="addTrip" type="button" className="btn p-0 m-1">
-            <a href="/"><i className="bi bi-plus-square" style={{fontSize: "50px"}}></i></a>
+                <a href="/"><i className="bi bi-plus-square success" style={{fontSize: "50px"}}></i></a>
             </button> 
             <Modal
                 show={show}

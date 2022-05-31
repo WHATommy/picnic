@@ -18,7 +18,7 @@ export const Navbar = (props) => {
         {
           props.user.trips.map(trip => {
             return (
-              <TripIcons currentTrip={currentTrip} tripId={trip._id} tripIcon={trip.icon.image} tripName={trip.name}/>
+              <TripIcons userId={props.user.info._id} currentTrip={currentTrip} tripId={trip._id} tripIcon={trip.icon.image} tripName={trip.name} key={trip._id}/>
             );
           })
         }
