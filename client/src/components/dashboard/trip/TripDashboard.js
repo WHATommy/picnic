@@ -5,14 +5,7 @@ import { HousingDashboard } from './Dashboards/HousingDashboard';
 import { EventDashboard } from './Dashboards/EventDashboard';
 import { RestaurantDashboard } from './Dashboards/RestaurantDashboard';
 
-import { loadAttendingContent } from '../../../slices/trip';
-
 export const TripDashboard = (props) => {
-    const dispatch = useDispatch();
-    useEffect(() => {
-        
-    }, [dispatch]);
-
     const content = useSelector((state) => state.content);
     const personalCost = useSelector((state) => state.trip.personalCost);
 
@@ -46,18 +39,19 @@ export const TripDashboard = (props) => {
                     startDate={startDate} 
                     endDate={endDate} 
                     contentType={content.contentType}
+                    userId={props.userId}
                 />
             </div>
             <div className="">
                 <div className="row row-cols-1 row-cols-md-2 g-4">
                     {(content.contentType === "housing") &&
-                        <HousingDashboard housings={content.content} />
+                        <HousingDashboard userId={props.userId} housings={content.content} />
                     }
                     {(content.contentType === "event") &&
-                        <EventDashboard events={content.content} />
+                        <EventDashboard userId={props.userId} events={content.content} />
                     }
                     {(content.contentType === "restaurant") &&
-                        <RestaurantDashboard restaurants={content.content} />
+                        <RestaurantDashboard userId={props.userId} restaurants={content.content} />
                     }
                 </div>
             </div>

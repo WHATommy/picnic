@@ -4,13 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { loadContentAttendees } from '../../../../slices/content';
 import contentService from "../../../../services/contentService";
-import { loadTrip } from '../../../../slices/trip';
+import { loadPersonalCost, loadTrip } from '../../../../slices/trip';
 import { loadAttendingContent } from '../../../../slices/trip';
 
 export const EventCard = (props) => {
     const dispatch = useDispatch();
-
-    const userId = useSelector((state) => state.user.info._id);
     const tripId = useSelector((state) => state.trip._id);
     const eventAttendee = useSelector((state) => state.content.attendees);
     const attendee = useSelector((state) => state.trip.attending);
@@ -35,16 +33,18 @@ export const EventCard = (props) => {
 
     const handleJoin = async () => {
         setLoading(true);
-        await contentService.joinContent(tripId, props.event._id, userId, "event");
-        dispatch(loadAttendingContent({ tripId: tripId, userId: userId }));
-        dispatch(loadTrip({tripId: tripId}));
+        await contentService.joinContent(tripId, props.event._id, props.userId, "event");
+        dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
+        dispatch(loadTrip({ tripId: tripId }));
         setLoading(false);
     }
 
     const handleLeave = async () => {
         setLoading(true);
-        await contentService.leaveContent(tripId, props.event._id, userId, "event");
-        dispatch(loadAttendingContent({ tripId: tripId, userId: userId }));
+        await contentService.leaveContent(tripId, props.event._id, props.userId, "event");
+        dispatch(loadAttendingContent({ tripId: tripId, userId: props.userId }));
+        dispatch(loadPersonalCost({ tripId: tripId, userId: props.userId }));
         dispatch(loadTrip({tripId: tripId}));
         setLoading(false);
     }
@@ -66,17 +66,17 @@ export const EventCard = (props) => {
         }
     );
     return (
-        <div className="card" style={{width: "18rem"}}>
+        <div className="card" style={{width: "18rem"}} key={props.event.name}>
         {props.event.image ? 
             <img
             className="rounded image-fluid"
-            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/house_metmml.png"
+            src={props.event.image.src}
             alt={props.event.image.title}
             />
             :
             <img
             className="rounded image-fluid"
-            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/house_metmml.png"
+            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/event_y8bwaz.png"
             alt="default housing"
             />
         }
@@ -92,14 +92,14 @@ export const EventCard = (props) => {
             <div className="col-6">
                 {
                     !(isAttendingEvent) ?
-                        <button className="btn btn-success" onClick={handleJoin}>
+                        <button className="btn btn-success" onClick={handleJoin} disabled={loading}>
                             {loading && (
                                 <span className="spinner-border spinner-border-sm"></span>
                             )}
                             Join
                         </button>
                     :
-                        <button className="btn btn-danger" onClick={handleLeave}>
+                        <button className="btn btn-danger" onClick={handleLeave} disabled={loading}>
                             {loading && (
                                 <span className="spinner-border spinner-border-sm"></span>
                             )}

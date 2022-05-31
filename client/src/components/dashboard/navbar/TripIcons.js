@@ -1,22 +1,22 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom';
+
 import { emptyContent } from '../../../slices/content';
 
-// Slices
-import { loadTrip, loadAttendingContent, loadPersonalCost } from "../../../slices/trip";
-
 export const TripIcons = (props) => {
+    let navigate = useNavigate();
+    
     const dispatch = useDispatch();
     const renderTooltip = () => (
         <Tooltip>{props.tripName}</Tooltip>
     );
 
     const handleGetTrip = (e) => {
-        dispatch(loadAttendingContent({ tripId: e.target.id, userId: props.userId }));
-        dispatch(loadPersonalCost({tripId: e.target.id, userId: props.userId}));
-        dispatch(loadTrip({tripId: e.target.id}));
         dispatch(emptyContent({}));
+        const url = `/dashboard/${props.userId}/${e.target.id}`;
+        navigate(url);
     }
 
     const inActive = "rounded";

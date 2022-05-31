@@ -5,11 +5,11 @@ import { setMessage } from "./message";
 
 export const loadUser = createAsyncThunk(
     "user",
-    async ({ token }, thunkAPI) => {
+    async ({}, thunkAPI) => {
         try {
-            const info = await userService.getUser(token);
-            const trips = await userService.getUserTrips(token);
-            const invitations = await userService.getUserInvitations(token);
+            const info = await userService.getUser();
+            const trips = await userService.getUserTrips();
+            const invitations = await userService.getUserInvitations();
             return { info, trips, invitations: invitations.data };
         } catch (error) {
             const message =

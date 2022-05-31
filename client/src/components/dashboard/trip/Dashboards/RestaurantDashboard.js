@@ -8,7 +8,7 @@ export const RestaurantDashboard = (props) => {
         props.restaurants.map(restaurant => {
           return (
             <>
-              <RestaurantCard restaurant={restaurant}/>
+              <RestaurantCard restaurant={restaurant} userId={props.userId}/>
             </>
           )
         })

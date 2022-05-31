@@ -45,7 +45,6 @@ export const loadAttendingContent = createAsyncThunk(
   "contentAttendee",
   async ({ tripId, userId }, thunkAPI) => {
     try {
-
       const attendingContent = await tripService.getAttendingContent(tripId, userId);
       return { attendingContent };
     } catch (error) {

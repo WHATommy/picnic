@@ -15,10 +15,10 @@ export const TripNavbar = (props) => {
             <h1 className="m-1 fw-light fs-2 text-center">{props.name}</h1>
             <div className="vr m-1"></div>
             <div className="text-center">
-                <HousingIcon tripId={props.tripId} contentType={props.contentType} />
-                <EventIcon tripId={props.tripId} contentType={props.contentType} />
-                <RestaurantIcon tripId={props.tripId} contentType={props.contentType} />
-                <AttendeeIcon tripId={props.tripId} contentType={props.contentType} />
+                <HousingIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
+                <EventIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
+                <RestaurantIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
+                <AttendeeIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
             </div>
             <div className="vr m-1"></div>
             <div>

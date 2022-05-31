@@ -45,6 +45,8 @@ const App = () => {
 
           <Route path="/" element={<PrivateRoute/>}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/:userId/:tripId" element={<Dashboard />} />
+            <Route path="/dashboard/:userId/:tripId/:contentType" element={<Dashboard />} />
           </Route> 
 
         </Routes>

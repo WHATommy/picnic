@@ -64,11 +64,9 @@ const getContentAttendees = async (userIds) => {
 const joinContent = async (tripId, contentId, userId, content) => {
     try {
         const authToken = authHeader();
-        const response = await axios
+        await axios
             .put(`${baseUrl}/${content}/${tripId}/${contentId}/${userId}/join`, {}, { headers: { "token": authToken } });
-        console.log(contentId)
-            console.log(response)
-            return true;
+        return true;
     } catch (error) {
         return false;
     };

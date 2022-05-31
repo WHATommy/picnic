@@ -142,34 +142,31 @@ Router.put(
             let eventCost = 0, housingCost = 0, restaurantCost = 0;
 
             // Get the sum of the events cost as long as they are attending atleast one event
-            if(attendee.attending.events.length > 0) {
-                const eventIds = Object.values(attendee.attending.events);
-                const events = await Event.find(({ _id : { $in: eventIds } }));
-                const sumCost = await events.reduce(async (sum, event) => {
-                    return sum + event.cost;
-                }, 0);
-                eventCost += sumCost;
-            }
+            const eventIds = Object.values(attendee.attending.events);
+            const events = await Event.find(({ _id : { $in: eventIds } }));
+            const eventSum = await events.reduce(async (sum, event) => {
+                return await sum + event.cost;
+            }, 0);
+            eventCost = eventSum;
 
             // Get the sum of the housings cost as long as they are attending atleast one housing
-            if(attendee.attending.housings.length > 0) {
-                housingCost = await attendee.attending.housings.reduce(async (sum, housingId) => {
-                    const housing = await Housing.findById(housingId);
-                    return sum + housing.cost;
-                }, 0);
-            }
+            const housingIds = Object.values(attendee.attending.housings);
+            const housings = await Housing.find(({ _id : { $in: housingIds } }));
+            const housingSum = await housings.reduce(async (sum, housing) => {
+                return await sum + housing.cost;
+            }, 0);
+            housingCost = housingSum;
             
             // Get the sum of the restaurants cost as long as they are attending atleast one restaurant
-            if(attendee.attending.restaurants.length > 0) {
-                restaurantCost = await attendee.attending.restaurants.reduce(async (sum, restaurantId) => {
-                    const restaurant = await Restaurant.findById(restaurantId);
-                    return sum + restaurant.cost;
-                }, 0);
-            }
+            const restaurantIds = Object.values(attendee.attending.restaurants);
+            const restaurants = await Restaurant.find(({ _id : { $in: restaurantIds } }));
+            const restaurantSum = await restaurants.reduce(async (sum, restaurant) => {
+                return await sum + restaurant.cost;
+            }, 0);
+            restaurantCost = restaurantSum;
 
             // Save the sum of events, housings, and restaurants cost into attendee's personal cost
             attendee.personalCost = eventCost + housingCost + restaurantCost;
-            console.log(eventCost, housingCost, restaurantCost)
 
             // Save updated attendee in the database
             await attendee.save();

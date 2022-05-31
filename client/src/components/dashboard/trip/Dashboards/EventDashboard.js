@@ -8,7 +8,7 @@ export const EventDashboard = (props) => {
         props.events.map(event => {
           return (
             <>
-              <EventCard event={event}/>
+              <EventCard event={event} userId={props.userId} />
             </>
           )
         })

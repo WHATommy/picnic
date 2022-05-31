@@ -1,20 +1,24 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
 // Slices
-import { loadAllContent } from '../../../slices/content';
-import { loadUser } from '../../../slices/user';
+import { emptyContent } from '../../../slices/content';
 
 export const EventIcon = (props) => {
+    console.log(props)
+    let navigate = useNavigate();
+
     const dispatch = useDispatch();
     const renderTooltip = () => (
         <Tooltip>Events</Tooltip>
     );
 
     const handleGetHousing = () => {
-        dispatch(loadAllContent({ tripId: props.tripId, contentType: "event" }));
-        dispatch(loadUser({}));
+        dispatch(emptyContent({}));
+        const url = `/dashboard/${props.userId}/${props.tripId}/event`;
+        navigate(url);
     }
 
     const inActive = "bi bi-balloon";

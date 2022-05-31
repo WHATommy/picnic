@@ -2,9 +2,9 @@ import axios from "axios";
 import authHeader from "../util/authHeader";
 import baseUrl from "../util/baseUrl";
 
-const getUser = async (token) => {
+const getUser = async () => {
     try {
-        const authToken = token ? token : authHeader();
+        const authToken = authHeader();
         const response = await axios.get(`${baseUrl}/user/`, { headers: { "token": authToken } });
         return response.data;
     } catch (error) {
@@ -12,9 +12,9 @@ const getUser = async (token) => {
     };
 };
 
-const getUserTrips = async (token) => {
+const getUserTrips = async () => {
     try {
-        const authToken = token ? token : authHeader();
+        const authToken = authHeader();
         const response = await axios.get(`${baseUrl}/trip/`, { headers: { "token": authToken } });
         return [...response.data];
     } catch (error) {
@@ -22,9 +22,9 @@ const getUserTrips = async (token) => {
     };
 };
 
-const getUserInvitations = async (token) => {
+const getUserInvitations = async () => {
     try {
-        const authToken = token ? token : authHeader();
+        const authToken = authHeader();
         const user = await axios.get(`${baseUrl}/user/`, { headers: { "token": authToken } });
         if (user.data.invitations.length === 0) {
             return [];
