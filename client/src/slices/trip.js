@@ -60,6 +60,25 @@ export const loadAttendingContent = createAsyncThunk(
   }
 )
 
+export const loadPendingAttendees = createAsyncThunk(
+  "pendingAttendee",
+  async ({ userIds }, thunkAPI) => {
+    try {
+      const pendingAttendees = await tripService.loadPendingUsers(userIds);
+      return { pendingAttendees };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+)
+
 // Initial State
 const initialState = { 
   _id: null,
@@ -76,7 +95,8 @@ const initialState = {
   attendees: null,
   pendingUsers: null,
   personalCost: 0,
-  attending: null
+  attending: null,
+  pendingAttendees: []
 };
 
 // Auth Slice
@@ -123,6 +143,12 @@ const tripSlice = createSlice({
     },
     [loadAttendingContent.rejected]: (state, action) => {
       state.attending = null;
+    },
+    [loadPendingAttendees.fulfilled]: (state, action) => {
+      state.pendingAttendees = action.payload.pendingAttendees;
+    },
+    [loadPendingAttendees.rejected]: (state, action) => {
+      state.pendingAttendees = []
     }
   }
 });

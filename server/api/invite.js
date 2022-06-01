@@ -7,7 +7,7 @@ const tripMiddleware = require("../middleware/tripMiddleware");
 const axios = require("axios");
 const baseUrl = require("../util/baseUrl");
 
-// Route    PUT invite/:tripId/:userId/invite
+// Route    PUT invite/:tripId/:userId/send
 // Desc     Add a user into the trip's pending user, add the invitation to the targeted user's invitation list
 // Access   Private
 Router.put(

@@ -1,10 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from "react-redux";
 import { AttendeeCard } from "./AttendeeCard";
 import { Modal } from 'react-bootstrap';
-import { Formik, Field, Form, ErrorMessage } from "formik";
 import { SearchUser } from './SearchUser';
+import { loadPendingAttendees } from '../../../../../slices/trip';
 
 export const AttendeeDashboard = (props) => {
+  const dispatch = useDispatch();
+  const pendingUsers = useSelector((state) => state.trip.pendingUsers);
+  
+  useEffect(() => {
+    const userIds = pendingUsers.map(user => user._id);
+    dispatch(loadPendingAttendees({ userIds }))
+  }, [dispatch, pendingUsers]);
+
+  const pendingAttendees = useSelector((state) => state.trip.pendingAttendees);
+
   // Modal show state
   const [show, setShow] = useState(false);
 
@@ -17,21 +28,39 @@ export const AttendeeDashboard = (props) => {
       setShow(true);
   };
   return (
-    <div className="row mb-3">
-      {
-        props.attendees.map(attendee => {
-          return (
-            <div className="col-md-3 col-12">
-              <AttendeeCard attendee={attendee} userId={props.userId} />
-            </div>
-          )
-        })
-      };
-      <div className="col-md-3 col-12">
-        <div className="text-center m-2">
-          <button id="addAttendee" type="button" className="btn mt-4" onClick={handleShow}>
-              <i className="bi bi-person-plus-fill primary" style={{fontSize: "50px"}}></i>
-          </button> 
+    <div className="container">
+      <div className="row mb-3">
+        <h3>Attendees</h3>
+        <hr />
+        {
+          props.attendees.map(attendee => {
+            return (
+              <div className="col-md-3 col-12">
+                <AttendeeCard attendee={attendee} userId={props.userId} />
+              </div>
+            )
+          })
+        };
+      </div>
+      <div className="row mb-3">
+        <h3>Pending</h3>
+        <hr />
+        {
+          (pendingAttendees.length !== 0) &&
+            pendingAttendees.map(attendee => {
+              return (
+                <div className="col-md-3 col-12">
+                  <AttendeeCard attendee={attendee} userId={props.userId} />
+                </div>
+              )
+            })
+        };
+        <div className="col-md-3 col-12">
+          <div className="text-center m-2">
+            <button id="addAttendee" type="button" className="btn mt-4" onClick={handleShow}>
+                <i className="bi bi-person-plus-fill primary" style={{fontSize: "50px"}}></i>
+            </button> 
+          </div>
         </div>
       </div>
       <Modal
@@ -46,5 +75,6 @@ export const AttendeeDashboard = (props) => {
           </div>
       </Modal>
     </div>
+    
   )
 }

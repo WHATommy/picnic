@@ -17,7 +17,7 @@ const upload = require("../util/mutler");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateHousingInput(req.body);
@@ -90,7 +90,7 @@ Router.post(
 Router.get(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -114,7 +114,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -269,7 +269,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -332,7 +332,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -383,7 +383,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables

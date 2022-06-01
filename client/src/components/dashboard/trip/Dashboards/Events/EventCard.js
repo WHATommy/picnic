@@ -122,7 +122,6 @@ export const EventCard = (props) => {
             </Modal.Header>
             <Modal.Body>
                 <ul className="list-group">
-                    {console.log(eventAttendee)}
                     {
                         eventAttendee && (
                             eventAttendee.map(attendee => {

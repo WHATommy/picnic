@@ -17,7 +17,7 @@ const upload = require("../util/mutler");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
     upload.single("image"),
     async (req, res) => {
         // Validate request inputs
@@ -90,7 +90,7 @@ Router.post(
 Router.get(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -116,7 +116,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -270,7 +270,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     async(req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -338,7 +338,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -389,7 +389,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner && tripMiddleware.isModerator && tripMiddleware.isPoster && tripMiddleware.isAttendee,
+    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
