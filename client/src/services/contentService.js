@@ -42,8 +42,13 @@ const getAllRestaurants = async (tripId) => {
 const getAllAttendees = async (tripId) => {
     try {
         const authToken = authHeader();
-        const response = await axios
+        const attendees = await axios
             .get(`${baseUrl}/attendee/${tripId}`, { headers: { "token": authToken } } );
+        const userIds = attendees.data.map(attendee => {
+            return attendee.userId
+        })
+        const response = await axios
+            .post(`${baseUrl}/user/list`, { userIds }, { headers: { "token": authToken } } );
         return response.data;
     } catch (error) {
         console.log(error);
@@ -93,7 +98,7 @@ const contentService = {
     getAllAttendees, 
     getContentAttendees, 
     joinContent, 
-    leaveContent 
+    leaveContent
 };
 
 export default contentService;

@@ -25,21 +25,43 @@ Router.get(
     }
 )
 
-// Route    GET api/user/:userId
-// Desc     Retrieve information about a user
+// Route    GET api/user/search
+// Desc     Retrieve information the current user
 // Access   Private
 Router.get(
-    "/:userId",
+    "/",
     authMiddleware,
     async(req, res) => {
         // Find a user inside the database
-        const user = await User.findById(req.params.userId);
+        const user = await User.findById(req.user);
 
         if(!user) {
             return res.status(404).send("User does not exist");
         }
 
         return res.status(200).json(user);
+    }
+)
+
+// Route    GET api/user/:userId
+// Desc     Retrieve information about a user
+// Access   Private
+Router.get(
+    "/:username",
+    authMiddleware,
+    async(req, res) => {
+        const {
+            username
+        } = req.params;
+
+        // Find a user inside the database
+        const users = await User.find({ username : { $regex: username } });
+
+        if(!users) {
+            return res.status(404).send("User does not exist");
+        }
+
+        return res.status(200).json(users);
 
     }
 )

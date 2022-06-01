@@ -50,7 +50,7 @@ export const InvitationList = (props) => {
                         const endTime = Intl.DateTimeFormat('en', { hour: "numeric", minute: "numeric", hour12: true } ).format(new Date(invite.endDate))
                         const [, endTzName] = /.*\s(.+)/.exec((new Date(invite.endDate)).toLocaleDateString(navigator.language, { timeZoneName: 'short' }));
                         return (
-                            <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto" key={invite._id}>
+                            <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto ms-4 me-4" key={invite._id}>
                                 <div className="align-middle">
                                     <img className="rounded mt-2 border secondary-border" src={invite.icon.image} width={70} height={70} alt={invite.icon.image} />
                                 </div>

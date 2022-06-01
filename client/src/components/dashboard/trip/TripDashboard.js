@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { TripNavbar } from './TripNavbar';
-import { HousingDashboard } from './Dashboards/HousingDashboard';
-import { EventDashboard } from './Dashboards/EventDashboard';
-import { RestaurantDashboard } from './Dashboards/RestaurantDashboard';
+import { HousingDashboard } from './Dashboards/Housings/HousingDashboard';
+import { EventDashboard } from './Dashboards/Events/EventDashboard';
+import { RestaurantDashboard } from './Dashboards/Restaurants/RestaurantDashboard';
+import { AttendeeDashboard } from './Dashboards/Attendees/AttendeeDashboard';
 
 export const TripDashboard = (props) => {
     const content = useSelector((state) => state.content);
@@ -43,17 +44,29 @@ export const TripDashboard = (props) => {
                 />
             </div>
             <div className="">
-                <div className="row row-cols-1 row-cols-md-2 g-4">
-                    {(content.contentType === "housing") &&
-                        <HousingDashboard userId={props.userId} housings={content.content} />
-                    }
-                    {(content.contentType === "event") &&
-                        <EventDashboard userId={props.userId} events={content.content} />
-                    }
-                    {(content.contentType === "restaurant") &&
-                        <RestaurantDashboard userId={props.userId} restaurants={content.content} />
-                    }
-                </div>
+                {
+                    
+                    (content.contentType === "attendee") ? 
+                    (
+                        <div className="container">
+                            <AttendeeDashboard userId={props.userId} attendees={content.content} />
+                        </div>
+                    )
+                    :
+                    (
+                        <div className="row row-cols-1 row-cols-md-2 g-4">
+                            {(content.contentType === "housing") &&
+                                <HousingDashboard userId={props.userId} housings={content.content} />
+                            }
+                            {(content.contentType === "event") &&
+                                <EventDashboard userId={props.userId} events={content.content} />
+                            }
+                            {(content.contentType === "restaurant") &&
+                                <RestaurantDashboard userId={props.userId} restaurants={content.content} />
+                            }
+                        </div>
+                    )
+                }
             </div>
         </div>
     )

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 
-import { loadContentAttendees } from '../../../../slices/content';
-import contentService from "../../../../services/contentService";
-import { loadPersonalCost, loadTrip } from '../../../../slices/trip';
-import { loadAttendingContent } from '../../../../slices/trip';
+import { loadContentAttendees } from '../../../../../slices/content';
+import contentService from "../../../../../services/contentService";
+import { loadPersonalCost, loadTrip } from '../../../../../slices/trip';
+import { loadAttendingContent } from '../../../../../slices/trip';
 
 export const HousingCard = (props) => {
     const dispatch = useDispatch();

@@ -96,7 +96,6 @@ const tripSlice = createSlice({
       state.events = action.payload.trip.events;
       state.restaurants = action.payload.trip.restaurants;
       state.housings = action.payload.trip.housings;
-      state.attendees = action.payload.trip.attendees;
       state.pendingUsers = action.payload.trip.pendingUsers;
     },
     [loadTrip.rejected]: (state, action) => {
@@ -111,7 +110,6 @@ const tripSlice = createSlice({
       state.events = null;
       state.restaurants = null;
       state.housings = null;
-      state.attendees = null;
       state.pendingUsers = null;
     },
     [loadPersonalCost.fulfilled]: (state, action) => {
