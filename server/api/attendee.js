@@ -83,19 +83,21 @@ Router.get(
 // Desc     Get a attendee's role
 // Access   Private
 Router.get(
-    "/:tripId/user/role",
+    "/:tripId/:userId/role",
     authMiddleware, 
+    tripMiddleware.isAttendee,
     async (req, res) => {
 
         // Store request values into callable variables
         const {
-            tripId
+            tripId,
+            userId
         } = req.params;
 
         try {
 
             // Find attendee in attendees database
-            const attendee = await Attendee.findOne({tripId: tripId, userId: req.user});
+            const attendee = await Attendee.findOne({ tripId: tripId, userId: userId });
 
             // If attendee does not exist, return failure
             if(!attendee) {
