@@ -79,6 +79,25 @@ export const loadPendingAttendees = createAsyncThunk(
   }
 )
 
+export const loadUserRole = createAsyncThunk(
+  "userRole",
+  async ({ tripId }, thunkAPI) => {
+    try {
+      const isMod = await tripService.loadRole(tripId);
+      return { isMod };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+)
+
 // Initial State
 const initialState = { 
   _id: null,
@@ -93,10 +112,12 @@ const initialState = {
   restaurants: null,
   housings: null,
   attendees: null,
+  attendeesInfo: null,
   pendingUsers: null,
   personalCost: 0,
   attending: null,
-  pendingAttendees: []
+  pendingAttendees: [],
+  isMod: false
 };
 
 // Auth Slice
@@ -149,6 +170,12 @@ const tripSlice = createSlice({
     },
     [loadPendingAttendees.rejected]: (state, action) => {
       state.pendingAttendees = []
+    },
+    [loadUserRole.fulfilled]: (state, action) => {
+      state.isMod = action.payload.isMod
+    },
+    [loadUserRole.rejected]: (state, action) => {
+      state.isMod = false;
     }
   }
 });

@@ -55,7 +55,6 @@ Router.get(
     "/:tripId/:userId",
     authMiddleware, 
     async (req, res) => {
-
         // Store request values into callable variables
         const {
             tripId,
@@ -72,6 +71,39 @@ Router.get(
 
             // Return successful
             return res.status(200).json(attendee);
+
+        } catch (err) {
+            //console.log(err);
+            return res.status(500).send("Server error");
+        }
+    }
+);
+
+// Route    GET api/attendee/:tripId/:userId
+// Desc     Get a attendee's role
+// Access   Private
+Router.get(
+    "/:tripId/user/role",
+    authMiddleware, 
+    async (req, res) => {
+
+        // Store request values into callable variables
+        const {
+            tripId
+        } = req.params;
+
+        try {
+
+            // Find attendee in attendees database
+            const attendee = await Attendee.findOne({tripId: tripId, userId: req.user});
+
+            // If attendee does not exist, return failure
+            if(!attendee) {
+                return res.status(404).json("Attendee does not exist");
+            }
+
+            // Return successful
+            return res.status(200).json(attendee.moderator);
 
         } catch (err) {
             //console.log(err);

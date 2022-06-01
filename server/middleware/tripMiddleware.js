@@ -38,6 +38,7 @@ const isModerator = async (req, res, next) => {
         const attendee = Attendee.find({tripId: tripId, userId: userId});
 
         if(!attendee.moderator) {
+            isOwner(req, res, next);
             return res.status(401).json({ error: "Access denied" });
         };
 
@@ -78,6 +79,10 @@ const isPoster = async (req, res, next) => {
             default:
                 break;
         }
+
+        isModerator(req, res, next);
+        isOwner(req, res, next);
+
         return res.status(401).json({ error: "Access denied" });
     } catch (err) {
         console.log(err);
@@ -98,7 +103,7 @@ const isAttendee = async (req, res, next) => {
         }
 
         // Check if the user is a attendee and a moderator for the trip
-        const isAttending = Attendee.findOne({ tripId: tripId, userId: req.user})
+        const isAttending = await Attendee.findOne({ tripId: tripId, userId: req.user});
 
         if(!isAttending) {
             return res.status(401).json({ error: "Access denied" });

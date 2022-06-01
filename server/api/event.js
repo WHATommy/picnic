@@ -17,7 +17,7 @@ const upload = require("../util/mutler");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async (req, res) => {
         // Validate request inputs
@@ -90,7 +90,7 @@ Router.post(
 Router.get(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -116,7 +116,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -270,7 +270,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isPoster,
     async(req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -338,7 +338,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -365,10 +365,10 @@ Router.put(
             cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
 
             // Push new image into event's images
-            event.images.push({
+            event.image = {
                 image: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
-            })
+            }
 
             // Save the event
             await event.save();
@@ -389,7 +389,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isPoster,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -411,7 +411,13 @@ Router.put(
             await cloudinary.uploader.destroy(imageId);
 
             // Remove target image
-            event.images = event.images.filter(image => image.cloudinaryId !== imageId);
+            // Remove target image
+            event.image = {
+                src: null,
+                title: null, 
+                description: null,
+                cloudinaryId: null
+            }
             
             // Save the event
             await event.save();

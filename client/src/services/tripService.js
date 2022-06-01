@@ -74,6 +74,18 @@ const inviteUser = async (tripId, userId) => {
     };
 }
 
-const tripService = { addTrip, getTrip, getPersonalCost, getUserAttendingContent, loadPendingUsers, inviteUser }
+// Load user role of a trip
+const loadRole = async (tripId) => {
+    try {
+        const authToken = authHeader();
+        const response = await axios
+            .get(`${baseUrl}/attendee/${tripId}/user/role`, { headers: { "token": authToken } } );
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    };
+}
+
+const tripService = { addTrip, getTrip, getPersonalCost, getUserAttendingContent, loadPendingUsers, inviteUser, loadRole }
 export default tripService;
 

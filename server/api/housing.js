@@ -17,7 +17,7 @@ const upload = require("../util/mutler");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateHousingInput(req.body);
@@ -90,7 +90,7 @@ Router.post(
 Router.get(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -114,7 +114,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -269,7 +269,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster,
+    tripMiddleware.isPoster,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -332,7 +332,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isPoster,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -359,10 +359,10 @@ Router.put(
             cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
 
             // Push new image into housing's images
-            housing.images.push({
+            housing.image ={
                 image: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
-            })
+            }
 
             // Save the housing
             await housing.save();
@@ -383,7 +383,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isPoster,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -405,7 +405,12 @@ Router.put(
             await cloudinary.uploader.destroy(imageId);
 
             // Remove target image
-            housing.images = housing.images.filter(image => image.cloudinaryId !== imageId);
+            housing.image = {
+                src: null,
+                title: null, 
+                description: null,
+                cloudinaryId: null
+            }
             
             // Save the housing
             await housing.save();

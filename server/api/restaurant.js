@@ -94,7 +94,7 @@ Router.post(
 Router.get(
     "/:tripId/:restaurantId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -118,7 +118,7 @@ Router.get(
 Router.get(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -274,7 +274,7 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster,
+    tripMiddleware.isPoster,
     async(req, res) => {  
         // Store request values into callable variables
         const {
@@ -410,7 +410,13 @@ Router.put(
             await cloudinary.uploader.destroy(imageId);
 
             // Remove target image
-            restaurant.images = restaurant.images.filter(image => image.cloudinaryId !== imageId);
+            // Remove target image
+            restaurant.image = {
+                src: null,
+                title: null, 
+                description: null,
+                cloudinaryId: null
+            }
             
             // Save the restaurant
             await restaurant.save();

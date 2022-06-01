@@ -36,7 +36,7 @@ export const AttendeeDashboard = (props) => {
           props.attendees.map(attendee => {
             return (
               <div className="col-md-3 col-12">
-                <AttendeeCard attendee={attendee} userId={props.userId} />
+                <AttendeeCard attendee={attendee} userId={props.userId} type="attendee" />
               </div>
             )
           })
@@ -48,9 +48,10 @@ export const AttendeeDashboard = (props) => {
         {
           (pendingAttendees.length !== 0) &&
             pendingAttendees.map(attendee => {
+              console.log(attendee)
               return (
                 <div className="col-md-3 col-12">
-                  <AttendeeCard attendee={attendee} userId={props.userId} />
+                  <AttendeeCard attendee={attendee} userId={props.userId} type="pending"/>
                 </div>
               )
             })
