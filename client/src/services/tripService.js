@@ -74,19 +74,51 @@ const inviteUser = async (tripId, userId) => {
     };
 }
 
-// Get user role of a trip
-const getRole = async (tripId, userId) => {
+// Load user role of a trip
+const loadRole = async (tripId) => {
     try {
         const authToken = authHeader();
         const response = await axios
-            .get(`${baseUrl}/attendee/${tripId}/${userId}/role`, { headers: { "token": authToken } } );
-        console.log(response.data)
+            .get(`${baseUrl}/attendee/${tripId}/user/role`, { headers: { "token": authToken } } );
         return response.data;
     } catch (error) {
         console.log(error);
     };
 }
 
-const tripService = { addTrip, getTrip, getPersonalCost, getUserAttendingContent, loadPendingUsers, inviteUser, getRole }
+// Load user role of a trip
+const changeModerator = async (tripId, userId) => {
+    try {
+        const authToken = authHeader();
+        await axios
+            .put(`${baseUrl}/attendee/${tripId}/${userId}/mod`, {}, { headers: { "token": authToken } } );
+    } catch (error) {
+        console.log(error);
+    };
+}
+
+// Load user role of a trip
+const kickUser = async (tripId, userId) => {
+    try {
+        const authToken = authHeader();
+        console.log(tripId, userId)
+        await axios
+            .delete(`${baseUrl}/attendee/${tripId}/${userId}`, { headers: { "token": authToken } } );
+    } catch (error) {
+        console.log(error);
+    };
+}
+
+const tripService = { 
+    addTrip, 
+    getTrip, 
+    getPersonalCost, 
+    getUserAttendingContent, 
+    loadPendingUsers, 
+    inviteUser, 
+    loadRole, 
+    changeModerator,
+    kickUser
+};
 export default tripService;
 

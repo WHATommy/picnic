@@ -10,7 +10,7 @@ import { InvitationList } from "./home/InvitationList";
 
 
 import { loadAllContent } from "../../slices/content";
-import { loadTrip, loadAttendingContent, loadPersonalCost, loadUserRole } from "../../slices/trip";
+import { loadTrip, loadAttendingContent, loadPersonalCost, loadUsersRole, loadAttendeesInfo } from "../../slices/trip";
 
 const Dashboard = () => {
     // Check if user has token
@@ -28,7 +28,7 @@ const Dashboard = () => {
             dispatch(loadTrip({tripId: params.tripId}));
             dispatch(loadAttendingContent({ tripId: params.tripId, userId: params.userId }));
             dispatch(loadPersonalCost({tripId: params.tripId, userId: params.userId}));
-            dispatch(loadUserRole({tripId: params.tripId}))
+            dispatch(loadUsersRole({tripId: params.tripId}));
         }
         if(params.tripId && params.contentType) {
             dispatch(loadAllContent({ tripId: params.tripId, contentType: params.contentType }));

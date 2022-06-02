@@ -41,6 +41,25 @@ export const loadPersonalCost = createAsyncThunk(
   }
 );
 
+export const loadAttendeesInfo = createAsyncThunk(
+  "contentAttendee",
+  async ({ tripId, userId }, thunkAPI) => {
+    try {
+      const attendingContent = await tripService.getUserAttendingContent(tripId, userId);
+      return { attendingContent };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+)
+
 export const loadAttendingContent = createAsyncThunk(
   "contentAttendee",
   async ({ tripId, userId }, thunkAPI) => {
@@ -79,12 +98,50 @@ export const loadPendingAttendees = createAsyncThunk(
   }
 )
 
-export const loadUserRole = createAsyncThunk(
+export const loadUsersRole = createAsyncThunk(
   "userRole",
   async ({ tripId }, thunkAPI) => {
     try {
-      const isMod = await tripService.loadRole(tripId);
-      return { isMod };
+      const moderators = await tripService.loadRole(tripId);
+      return { moderators };
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+);
+
+export const changeModeratorStatus = createAsyncThunk(
+  "userMod",
+  async ({ tripId, userId }, thunkAPI) => {
+    try {
+      await tripService.changeModerator(tripId, userId);
+      return thunkAPI.dispatch(loadUsersRole({ tripId }));
+    } catch (error) {
+      const message =
+          (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+          error.message ||
+          error.toString();
+      thunkAPI.dispatch(setMessage(message));
+      return thunkAPI.rejectWithValue();
+    }
+  }
+);
+
+export const kickUserFromTrip = createAsyncThunk(
+  "kickUserFromTrip",
+  async ({ tripId, userId }, thunkAPI) => {
+    try {
+      await tripService.kickUser(tripId, userId);
+      await thunkAPI.dispatch(loadTrip({ tripId }));
     } catch (error) {
       const message =
           (error.response &&
@@ -117,7 +174,7 @@ const initialState = {
   personalCost: 0,
   attending: null,
   pendingAttendees: [],
-  isMod: false
+  moderators: []
 };
 
 // Auth Slice
@@ -171,11 +228,11 @@ const tripSlice = createSlice({
     [loadPendingAttendees.rejected]: (state, action) => {
       state.pendingAttendees = []
     },
-    [loadUserRole.fulfilled]: (state, action) => {
-      state.isMod = action.payload.isMod
+    [loadUsersRole.fulfilled]: (state, action) => {
+      state.moderators = action.payload.moderators
     },
-    [loadUserRole.rejected]: (state, action) => {
-      state.isMod = false;
+    [loadUsersRole.rejected]: (state, action) => {
+      state.moderators = [];
     }
   }
 });

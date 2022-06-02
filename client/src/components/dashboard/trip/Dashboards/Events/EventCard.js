@@ -128,7 +128,7 @@ export const EventCard = (props) => {
                                 return (
                                     <li className="list-group-item d-flex flex-row flex-nowrap overflow-auto">
                                         <img className="rounded-circle" src={attendee.profilePic.image} height="65" width="65" alt={attendee.name} />
-                                        <h3 className="mt-3 ms-3">{attendee.username}</h3>
+                                        <h3 className="mt-2 ms-3">{attendee.username}</h3>
                                     </li>
                                 )
                             })

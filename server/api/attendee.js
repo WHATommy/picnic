@@ -83,29 +83,31 @@ Router.get(
 // Desc     Get a attendee's role
 // Access   Private
 Router.get(
-    "/:tripId/:userId/role",
+    "/:tripId/user/role",
     authMiddleware, 
     tripMiddleware.isAttendee,
     async (req, res) => {
 
         // Store request values into callable variables
         const {
-            tripId,
-            userId
+            tripId
         } = req.params;
 
         try {
 
             // Find attendee in attendees database
-            const attendee = await Attendee.findOne({ tripId: tripId, userId: userId });
+            const attendees = await Attendee.find({ tripId: tripId });
 
             // If attendee does not exist, return failure
-            if(!attendee) {
+            if(!attendees) {
                 return res.status(404).json("Attendee does not exist");
             }
 
+            const filteredAttendee = attendees.filter(attendee => attendee.moderator !== false);
+            const mappedAttendee = filteredAttendee.map(attendee => attendee.userId);
+
             // Return successful
-            return res.status(200).json(attendee.moderator);
+            return res.status(200).json(mappedAttendee);
 
         } catch (err) {
             //console.log(err);
@@ -307,7 +309,7 @@ Router.delete(
     "/:tripId/:userId",
     authMiddleware,
     async (req, res) => {
-
+        console.log(req.params)
         // Store request values into callable variables
         const {
             tripId,
@@ -315,6 +317,14 @@ Router.delete(
         } = req.params;
 
         try {
+
+            const user = User.findById(userId);
+            if(!user) {
+                return res.status(404).send("User does not exist");
+            }
+
+            const newTrips = user.trips.filter(trip => trip._id !== tripId);
+            await axios.put(`${baseUrl}/user/${userId}`, { trips: newTrips }, { headers: { "token": req.header("token") } });
 
             // Find the attendee in the attendees database
             const attendee = await Attendee.findOne({ tripId: tripId, userId: userId });

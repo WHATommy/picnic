@@ -8,13 +8,13 @@ import { loadPendingAttendees } from '../../../../../slices/trip';
 export const AttendeeDashboard = (props) => {
   const dispatch = useDispatch();
   const pendingUsers = useSelector((state) => state.trip.pendingUsers);
+  const pendingAttendees = useSelector((state) => state.trip.pendingAttendees);
   
   useEffect(() => {
     const userIds = pendingUsers.map(user => user._id);
     dispatch(loadPendingAttendees({ userIds }))
   }, [dispatch, pendingUsers]);
 
-  const pendingAttendees = useSelector((state) => state.trip.pendingAttendees);
 
   // Modal show state
   const [show, setShow] = useState(false);
@@ -48,7 +48,6 @@ export const AttendeeDashboard = (props) => {
         {
           (pendingAttendees.length !== 0) &&
             pendingAttendees.map(attendee => {
-              console.log(attendee)
               return (
                 <div className="col-md-3 col-12">
                   <AttendeeCard attendee={attendee} userId={props.userId} type="pending"/>
