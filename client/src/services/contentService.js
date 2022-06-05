@@ -91,6 +91,37 @@ const leaveContent = async (tripId, contentId, userId, content) => {
     };
 };
 
+const addContent = async (tripId, contentInfo, contentType) => {
+    try {
+        const authToken = authHeader();
+        console.log(tripId, contentType, contentInfo)
+        await axios
+            .post(`${baseUrl}/${contentType}/${tripId}`, contentInfo, { headers: { "token": authToken } });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const editContent = async (tripId, contentInfo, contentType) => {
+    try {
+        const authToken = authHeader();
+        await axios
+            .put(`${baseUrl}/${contentType}/${tripId}/${contentInfo._id}`, contentInfo, { headers: { "token": authToken } });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const removeContent = async (tripId, contentId, contentType) => {
+    try {
+        const authToken = authHeader();
+        await axios
+            .delete(`${baseUrl}/${contentType}/${tripId}/${contentId}`, { headers: { "token": authToken } });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const contentService = { 
     getAllEvents, 
     getAllHousings, 
@@ -98,7 +129,10 @@ const contentService = {
     getAllAttendees, 
     getContentAttendees, 
     joinContent, 
-    leaveContent
+    leaveContent,
+    addContent,
+    editContent,
+    removeContent
 };
 
 export default contentService;

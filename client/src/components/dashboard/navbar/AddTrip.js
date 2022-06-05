@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { Button, Modal } from 'react-bootstrap';
 import * as Yup from "yup";
+import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 // Slices
 import { clearMessage } from "../../../slices/message";
@@ -12,6 +13,10 @@ import tripService from "../../../services/tripService";
 import { loadUser } from '../../../slices/user';
 
 export const AddTrip = () => {
+    const renderTooltip = () => (
+        <Tooltip>Create a trip</Tooltip>
+    );
+
     // Loading state
     const [loading, setLoading] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -79,9 +84,11 @@ export const AddTrip = () => {
 
     return (
         <div>
-            <button onClick={handleShow} id="addTrip" type="button" className="btn p-0 m-1">
-                <a href="/"><i className="bi bi-plus-square success" style={{fontSize: "50px"}}></i></a>
-            </button> 
+            <OverlayTrigger placement="bottom" overlay={(renderTooltip())}>
+                <button onClick={handleShow} id="addTrip" type="button" className="btn p-0 m-1">
+                    <a href="/"><i className="bi bi-plus-square success" style={{fontSize: "50px"}}></i></a>
+                </button> 
+            </OverlayTrigger>
             <Modal
                 show={show}
                 onHide={handleClose}

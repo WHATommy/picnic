@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AttendeeIcon } from './AttendeeIcon';
 import { EventIcon } from './EventIcon';
 import { HousingIcon } from './HousingIcon';
 import { RestaurantIcon } from './RestaurantIcon';
 import { LeaveIcon } from './LeaveIcon';
+import { AddContentIcon } from './AddContentIcon';
 
 export const TripNavbar = (props) => {
     return (
@@ -20,6 +21,8 @@ export const TripNavbar = (props) => {
                 <RestaurantIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
                 <AttendeeIcon userId={props.userId} tripId={props.tripId} contentType={props.contentType} />
             </div>
+            <div className="vr m-1"></div>
+                <AddContentIcon userId={props.userId} tripId={props.tripId} />
             <div className="vr m-1"></div>
             <div>
                 <p className="m-1"><span className="fw-light"><i className="bi bi-geo-alt-fill primary"></i> {props.location}</span></p>

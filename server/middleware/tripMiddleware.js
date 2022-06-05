@@ -106,7 +106,7 @@ const isAttendee = async (req, res, next) => {
         const isAttending = await Attendee.findOne({ tripId: tripId, userId: req.user});
 
         if(!isAttending) {
-            return res.status(401).json({ error: "Access denied" });
+            return res.status(401).json({ error: "Access denied11" });
         };
 
         next();

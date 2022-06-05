@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 
-import { loadContentAttendees } from '../../../../../slices/content';
+import { loadContentAttendees, removeContent, loadAllContent } from '../../../../../slices/content';
 import contentService from "../../../../../services/contentService";
 import { loadPersonalCost, loadTrip } from '../../../../../slices/trip';
 import { loadAttendingContent } from '../../../../../slices/trip';
+import { HousingEditModal } from './HousingEditModal';
 
 export const HousingCard = (props) => {
     const dispatch = useDispatch();
@@ -13,14 +14,16 @@ export const HousingCard = (props) => {
     const housingAttendee = useSelector((state) => state.content.attendees);
     const attendee = useSelector((state) => state.trip.attending);
     const isAttendingHousing = attendee.attending.housings.find(housing => housing._id === props.housing._id);
+    const ownerId = useSelector((state) => state.trip.owner);
+    const moderators = useSelector((state) => state.trip.moderators);
 
     // Loading state
     const [loading, setLoading] = useState(false);
+    // Loading state
+    const [loadingRemove, setLoadingRemove] = useState(false);
 
     // Modal show state
     const [show, setShow] = useState(false);
-
-
     // Modal toggle
     const handleClose = () => {
         setShow(false);
@@ -29,6 +32,31 @@ export const HousingCard = (props) => {
         dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
         e.preventDefault();
         setShow(true);
+    };
+
+    // Modal show state
+    const [showEdit, setShowEdit] = useState(false);
+    // Modal toggle
+    const handleCloseEdit = () => {
+        setShowEdit(false);
+    };
+    
+    const handleShowEdit = (e) => {
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
+        e.preventDefault();
+        setShowEdit(true);
+    };
+
+    // Modal show state
+    const [showRemove, setShowRemove] = useState(false);
+    // Modal toggle
+    const handleCloseRemove = () => {
+        setShowRemove(false);
+    };
+    const handleShowRemove = (e) => {
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.housing._id, contentType: "housing" }));
+        e.preventDefault();
+        setShowRemove(true);
     };
 
     const handleJoin = async () => {
@@ -51,6 +79,18 @@ export const HousingCard = (props) => {
         setLoading(false);
     }
 
+    const handleRemove = async () => {
+        setLoadingRemove(true);
+        await dispatch(removeContent({ 
+            tripId: tripId, 
+            contentId: props.housing._id, 
+            contentType: "housing" 
+        }));
+        await dispatch(loadAllContent({tripId: tripId, contentType: "housing"}));
+        await dispatch(loadPersonalCost({tripId: tripId, userId: props.userId}));
+        setLoadingRemove(false);
+    }
+
     const startDate = new Date(props.housing.startDate).toLocaleDateString(
         'en-US',
         {
@@ -58,8 +98,8 @@ export const HousingCard = (props) => {
         month: 'long',
         day: 'numeric'
         }
-      );
-      const endDate = new Date(props.housing.endDate).toLocaleDateString(
+    );
+    const endDate = new Date(props.housing.endDate).toLocaleDateString(
         'en-US',
         {
         year: 'numeric',
@@ -67,19 +107,20 @@ export const HousingCard = (props) => {
         day: 'numeric'
         }
     );
+
     return (
         <div className="card" style={{width: "18rem"}} key={props.housing.name}>
         {props.housing.image ? 
             <img
-            className="rounded image-fluid"
-            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/house_metmml.png"
-            alt={props.housing.image.title}
+                className="rounded image-fluid"
+                src={props.housing.image.src}
+                alt={props.housing.image.title}
             />
             :
             <img
-            className="rounded image-fluid"
-            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/house_metmml.png"
-            alt="default housing"
+                className="rounded image-fluid"
+                src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/house_metmml.png"
+                alt="default housing"
             />
         }
         <div className="card-body">
@@ -110,9 +151,19 @@ export const HousingCard = (props) => {
                 }
             </div>
             <div className="col-6 text-end">
-            <button className="btn btn-primary" onClick={handleShow}>Attendees</button>
+                <button className="btn btn-primary" onClick={handleShow}>Attendees</button>
             </div>
         </div>
+        { ((ownerId === props.userId) || (moderators.includes(props.userId))) &&
+            <div className="card-body row">
+                <div className="col-6">
+                    <button className="btn btn-secondary" onClick={handleShowEdit}>Edit</button>
+                </div>
+                <div className="col-6 text-end">
+                    <button className="btn btn-danger" onClick={handleShowRemove}>Remove</button>
+                </div>
+            </div>
+        }
         <Modal
             show={show}
             onHide={handleClose}
@@ -137,6 +188,37 @@ export const HousingCard = (props) => {
                 </ul>
             </Modal.Body>
         </Modal>
-        </div> 
+        <Modal
+            show={showEdit}
+            onHide={handleCloseEdit}
+        >
+            <HousingEditModal userId={props.userId} housing={props.housing} tripId={tripId} handleCloseEdit={handleCloseEdit} />
+        </Modal>
+        <Modal
+            show={showRemove}
+            onHide={handleCloseRemove}
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>Remove {props.housing.name}?</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <div className="container">
+                    <div className="row">
+                        <div className="col-6">
+                            <button className="btn btn-primary" onClick={handleRemove}>
+                                {loadingRemove && (
+                                    <span className="spinner-border spinner-border-sm"></span>
+                                )}
+                                Confirm
+                            </button>
+                        </div>
+                        <div className="col-6 text-end">
+                            <button className="btn btn-danger" onClick={handleShowRemove}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </Modal.Body>
+        </Modal>
+    </div> 
   )
 }

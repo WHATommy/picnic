@@ -30,6 +30,8 @@ const getTrip = async (tripId) => {
 const getPersonalCost = async (tripId, userId) => {
     try {
         const authToken = authHeader();
+        await axios
+            .put(`${baseUrl}/attendee/${tripId}/${userId}/personalcost`, {}, { headers: { "token": authToken } } );
         const response = await axios
             .get(`${baseUrl}/attendee/${tripId}/${userId}`, { headers: { "token": authToken } } );
         return response.data.personalCost;

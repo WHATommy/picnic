@@ -38,12 +38,18 @@ connectDb();
 
 // Web socket
 const server = require("http").createServer(app);   // Conjunction with express.js for websocket
-const io = require("socket.io")(process.env.PORT, {
-    cors: {
-      origin: ["http://localhost:3000"]
-    }
-});
+
+// Server static assets if in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static('../client/build'));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
+}
 
 // Server listening on PORT
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server listening on server ${PORT}`))
+

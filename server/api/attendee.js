@@ -8,6 +8,7 @@ const Trip = require("../models/TripModel");
 const Event = require("../models/EventModel");
 const Housing = require("../models/HousingModel");
 const Restaurant = require("../models/RestaurantModel");
+const User = require("../models/UserModel");
 
 // Middleware
 const authMiddleware = require("../middleware/authMiddleware");

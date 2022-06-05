@@ -10,6 +10,7 @@ import PrivateRoute from "./components/routing/PrivateRoute";
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './components/dashboard/Dashboard';
+import { NotFoundPage } from './components/NotFoundPage';
 
 // Slices
 import { loadUser } from './slices/user';
@@ -41,12 +42,14 @@ const App = () => {
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>       
 
           <Route path="/" element={<PrivateRoute/>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/:userId/:tripId" element={<Dashboard />} />
             <Route path="/dashboard/:userId/:tripId/:contentType" element={<Dashboard />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route> 
 
         </Routes>

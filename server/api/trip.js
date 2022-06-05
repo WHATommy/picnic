@@ -168,6 +168,7 @@ Router.get(
 Router.put(
     "/:tripId",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -224,6 +225,7 @@ Router.put(
     "/:tripId/uploadImage",
     authMiddleware,
     upload.single("image"),
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -269,7 +271,7 @@ Router.put(
 Router.put(
     "/:tripId/cost",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {

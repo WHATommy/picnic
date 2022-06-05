@@ -17,7 +17,7 @@ const upload = require("../util/mutler");
 Router.post(
     "/:tripId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     async (req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateRestaurantInput(req.body);
@@ -42,7 +42,7 @@ Router.post(
             categories,
             phoneNumber,
             websiteUrl,
-            images,
+            image,
             attendees
         } = req.body;
 
@@ -57,7 +57,7 @@ Router.post(
             let newRestaurant = new Restaurants({
                 tripId,
                 attendees,
-                poster,
+                poster: req.user,
                 name,
                 location,
                 rating,
@@ -66,13 +66,15 @@ Router.post(
                 cost,
                 categories,
                 phoneNumber,
-                websiteUrl,
-                images
+                websiteUrl
             });
 
             // Save the restaurant in the 'restaurant' collection and the restaurant id into the trip's list of restaurants
-            await newRestaurant.save().then(restaurant => {
-                trip.restaurants.unshift(restaurant._id);
+            await newRestaurant.save().then(async restaurant => {
+                await trip.restaurants.unshift(restaurant._id);
+                if(image) {
+                    await axios.put(`${baseUrl}/restaurant/${tripId}/${restaurant._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
+                }
             });
 
             // Update trip's restaurants
@@ -80,7 +82,7 @@ Router.post(
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
-            return res.status(200).json(newRestaurant);
+            return res.status(200).json(newRestaurant)
         } catch (err) {
             console.log(err);
             return res.status(500).send("Server error");
@@ -145,6 +147,7 @@ Router.get(
 Router.put(
     "/:tripId/:restaurantId/:userId/join",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -209,6 +212,7 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId/:userId/leave",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -274,11 +278,12 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     async(req, res) => {  
         // Store request values into callable variables
         const {
-            restaurantId
+            restaurantId,
+            tripId
         } = req.params
         const {
             name,
@@ -290,7 +295,7 @@ Router.put(
             categories,
             phoneNumber,
             websiteUrl,
-            images,
+            image,
             attendees
         } = req.body;
 
@@ -313,7 +318,6 @@ Router.put(
             categories ? restaurant.categories = categories : null;
             phoneNumber ? restaurant.phoneNumber = phoneNumber : null;
             websiteUrl ? restaurant.websiteUrl = websiteUrl : null;
-            images ? restaurant.image = image : null;
             attendees ? restaurant.attendees = attendees : null;
 
             // Save the restaurant
@@ -321,6 +325,12 @@ Router.put(
 
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
+
+            // Update image
+            if(image) {
+                await axios.put(`${baseUrl}/restaurant/${tripId}/${restaurant._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
+            }
+            
 
             return res.status(200).json(restaurant);
         } catch (err) {
@@ -337,13 +347,17 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
         const {
             restaurantId
         } = req.params
+
+        const {
+            image
+        } = req.body
 
         try {
             // Retrieve a restaurant by ID
@@ -355,19 +369,19 @@ Router.put(
             }
 
             // Check if a image file exist in the request
-            if(!req.file.path) {
+            if(!image) {
                 return res.status(401).send("Empty image file");
             }
 
             // Upload image to cloudinary
             let cloudinaryResult = null;
-            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            cloudinaryResult = await cloudinary.uploader.upload(image);
 
-            // Push new image into restaurant's images
-            restaurant.images.push({
-                image: cloudinaryResult.secure_url,
+            // Push new image into restaurant's image
+            restaurant.image = {
+                src: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
-            })
+            }
 
             // Save the restaurant
             await restaurant.save();
@@ -388,7 +402,7 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -437,7 +451,7 @@ Router.put(
 Router.delete(
     "/:tripId/:restaurantId",
     authMiddleware,
-    tripMiddleware.isOwner,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -467,10 +481,8 @@ Router.delete(
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
-            // Remove restaurant's images from cloudinary
-            housing.images.forEach(async image => {
-                await cloudinary.uploader.destroy(image.cloudinaryId);
-            });
+            // Remove restaurant's image from cloudinary
+            await cloudinary.uploader.destroy(restaurant.image.cloudinaryId);
 
             // Remove restaurant from database
             await restaurant.remove();
@@ -491,7 +503,7 @@ Router.delete(
 Router.put(
     "/:tripId/:restaurantId/uploadImage",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -515,10 +527,10 @@ Router.put(
 
             // Upload image to cloudinary
             let cloudinaryResult = null;
-            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            cloudinaryResult = await cloudinary.uploader.upload(image);
 
-            // Push new image into restaurant's images
-            restaurant.images.push({
+            // Push new image into restaurant's image
+            restaurant.image.push({
                 image: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
             })
@@ -542,7 +554,7 @@ Router.put(
 Router.put(
     "/:tripId/:restaurantId/:imageId",
     authMiddleware,
-    tripMiddleware.isOwner || tripMiddleware.isModerator || tripMiddleware.isPoster || tripMiddleware.isAttendee,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -564,7 +576,7 @@ Router.put(
             await cloudinary.uploader.destroy(imageId);
 
             // Remove target image
-            restaurant.images = restaurant.images.filter(image => image.cloudinaryId !== imageId);
+            restaurant.image = restaurant.image.filter(image => image.cloudinaryId !== imageId);
             
             // Save the restaurant
             await restaurant.save();

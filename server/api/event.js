@@ -33,6 +33,7 @@ Router.post(
             tripId
         } = req.params;
         const {
+            image, 
             name,
             location,
             startDate,
@@ -67,8 +68,11 @@ Router.post(
             });
 
             // Save the event in the 'event' collection and the event id into the trip's list of events
-            await newEvent.save().then(event => {
-                trip.events.unshift(event._id);
+            await newEvent.save().then(async event => {
+                await trip.events.unshift(event._id);
+                if(image) {
+                    await axios.put(`${baseUrl}/event/${tripId}/${event._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
+                }
             });
 
             // Update trip's events
@@ -99,9 +103,7 @@ Router.get(
 
         // Find a event inside the database
         const event = await Events.findById(eventId);
-
-        console.log(event)
-
+        
         if(!event) {
             return res.status(404).send("Events does not exist");
         }
@@ -143,6 +145,7 @@ Router.get(
 Router.put(
     "/:tripId/:eventId/:userId/join",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -207,6 +210,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/:userId/leave",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -270,7 +274,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Validate request inputs
         const { errors, isValid } = await validateEventInput(req.body);
@@ -285,6 +289,7 @@ Router.put(
             eventId
         } = req.params
         const {
+            image,
             name,
             location,
             startDate,
@@ -320,8 +325,11 @@ Router.put(
             await event.save();
 
             // Update trip's cost
-            if(cost) {
-                await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
+            await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
+
+            // Update image
+            if(image) {
+                await axios.put(`${baseUrl}/event/${tripId}/${event._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
             }
 
             return res.status(200).json(event);
@@ -346,6 +354,10 @@ Router.put(
             eventId
         } = req.params
 
+        const {
+            image
+        } = req.body
+
         try {
             // Retrieve a event by ID
             let event = await Events.findById(eventId);
@@ -356,17 +368,17 @@ Router.put(
             }
 
             // Check if a image file exist in the request
-            if(!req.file) {
+            if(!image) {
                 return res.status(401).send("Empty image file");
             }
 
             // Upload image to cloudinary
             let cloudinaryResult = null;
-            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            cloudinaryResult = await cloudinary.uploader.upload(image);
 
-            // Push new image into event's images
+            // Push new image into event's image
             event.image = {
-                image: cloudinaryResult.secure_url,
+                src: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
             }
 
@@ -389,7 +401,7 @@ Router.put(
 Router.put(
     "/:tripId/:eventId/:imageId",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -438,7 +450,7 @@ Router.put(
 Router.delete(
     "/:tripId/:eventId",
     authMiddleware,
-    tripMiddleware.isOwner,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -468,10 +480,8 @@ Router.delete(
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
-            // Remove event images from cloudinary
-            event.images.forEach(async image => {
-                await cloudinary.uploader.destroy(image.cloudinaryId);
-            });
+            // Remove event image from cloudinary
+            await cloudinary.uploader.destroy(event.image.cloudinaryId);
 
             // Remove event from database
             await event.remove();

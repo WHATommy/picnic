@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import contentService from "../services/contentService";
 import { setMessage } from "./message";
+import { loadTrip } from "./trip";
 
 export const loadAllContent = createAsyncThunk(
   "allContent",
@@ -61,6 +62,64 @@ export const emptyContent = createAsyncThunk(
     "emptyContent",
     async ({}, thunkAPI) => {
         return { contentType: null, content: null };
+    }
+);
+
+export const addContentInfo = createAsyncThunk(
+    "addContentInfo",
+    async ({ tripId, contentInfo, contentType }, thunkAPI) => {
+        try {
+            await contentService.addContent(tripId, contentInfo, contentType);
+            return thunkAPI.dispatch(loadAllContent({ tripId, contentType }));
+        } catch (error) {
+            const message =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+            thunkAPI.dispatch(setMessage(message));
+            return thunkAPI.rejectWithValue();
+        }
+    }
+);
+
+export const editContentInfo = createAsyncThunk(
+    "editContentInfo",
+    async ({ tripId, contentInfo, contentType }, thunkAPI) => {
+        try {
+            await contentService.editContent(tripId, contentInfo, contentType);
+            return thunkAPI.dispatch(loadAllContent({ tripId, contentType }));
+        } catch (error) {
+            const message =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+            thunkAPI.dispatch(setMessage(message));
+            return thunkAPI.rejectWithValue();
+        }
+    }
+);
+
+export const removeContent = createAsyncThunk(
+    "removeContent",
+    async ({ tripId, contentId, contentType }, thunkAPI) => {
+        try {
+            await contentService.removeContent(tripId, contentId, contentType);
+            await thunkAPI.dispatch(loadTrip({tripId: tripId}))
+            return thunkAPI.dispatch(loadAllContent({ tripId, contentType }));
+        } catch (error) {
+            const message =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+            thunkAPI.dispatch(setMessage(message));
+            return thunkAPI.rejectWithValue();
+        }
     }
 );
 

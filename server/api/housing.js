@@ -67,8 +67,11 @@ Router.post(
             });
 
             // Save the housing in the 'housing' collection and the housing id into the trip's list of housings
-            await newHousing.save().then(housing => {
-                trip.housings.unshift(housing._id);
+            await newHousing.save().then(async housing => {
+                await trip.housings.unshift(housing._id);
+                if(image) {
+                    await axios.put(`${baseUrl}/housing/${tripId}/${housing._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
+                }
             });
 
             // Update trip's housing
@@ -141,6 +144,7 @@ Router.get(
 Router.put(
     "/:tripId/:housingId/:userId/join",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -205,6 +209,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/:userId/leave",
     authMiddleware,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -269,11 +274,12 @@ Router.put(
 Router.put(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
-            housingId
+            housingId,
+            tripId
         } = req.params
         const {
             name,
@@ -285,7 +291,7 @@ Router.put(
             categories,
             phoneNumber,
             websiteUrl,
-            images,
+            image,
             attendees
         } = req.body;
 
@@ -308,14 +314,18 @@ Router.put(
             categories ? housing.categories = categories : null;
             phoneNumber ? housing.phoneNumber = phoneNumber : null;
             websiteUrl ? housing.websiteUrl = websiteUrl : null;
-            images ? housing.image = image : null;
             attendees ? housing.attendees = attendees : null;
+
+            // Save the housing
+            await housing.save();
 
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
-            // Save the housing
-            await housing.save();
+            // Update image
+            if(image) {
+                await axios.put(`${baseUrl}/housing/${tripId}/${housing._id}/uploadImage`, { image }, { headers: { "token": req.header("token") } });
+            }
 
             return res.status(200).json(housing);
         } catch (err) {
@@ -332,13 +342,17 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/uploadImage",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
         const {
             housingId
         } = req.params
+
+        const {
+            image
+        } = req.body
 
         try {
             // Retrieve a housing by ID
@@ -350,17 +364,17 @@ Router.put(
             }
 
             // Check if a image file exist in the request
-            if(!req.file) {
+            if(!image) {
                 return res.status(401).send("Empty image file");
             }
 
             // Upload image to cloudinary
             let cloudinaryResult = null;
-            cloudinaryResult = await cloudinary.uploader.upload(req.file.path);
+            cloudinaryResult = await cloudinary.uploader.upload(image);
 
-            // Push new image into housing's images
-            housing.image ={
-                image: cloudinaryResult.secure_url,
+            // Push new image into housing's image
+            housing.image = {
+                src: cloudinaryResult.secure_url,
                 cloudinaryId: cloudinaryResult.public_id
             }
 
@@ -383,7 +397,7 @@ Router.put(
 Router.put(
     "/:tripId/:housingId/:imageId",
     authMiddleware,
-    tripMiddleware.isPoster,
+    tripMiddleware.isAttendee,
     upload.single("image"),
     async(req, res) => {
         // Store request values into callable variables
@@ -431,7 +445,7 @@ Router.put(
 Router.delete(
     "/:tripId/:housingId",
     authMiddleware,
-    tripMiddleware.isOwner,
+    tripMiddleware.isAttendee,
     async(req, res) => {
         // Store request values into callable variables
         const {
@@ -460,10 +474,8 @@ Router.delete(
             // Update trip's cost
             await axios.put(`${baseUrl}/trip/${tripId}/cost`, {}, { headers: { "token": req.header("token") } });
 
-            // Remove housing images from cloudinary
-            housing.images.forEach(async image => {
-                await cloudinary.uploader.destroy(image.cloudinaryId);
-            });
+            // Remove housing image from cloudinary
+            await cloudinary.uploader.destroy(housing.image.cloudinaryId);
 
             // Remove housing from database
             await housing.remove();

@@ -27,6 +27,7 @@ export const AttendeeDashboard = (props) => {
       e.preventDefault();
       setShow(true);
   };
+  
   return (
     <div className="container">
       <div className="row mb-3">
@@ -67,14 +68,13 @@ export const AttendeeDashboard = (props) => {
           show={show}
           onHide={handleClose}
       >
-          <Modal.Header closeButton>
-              <Modal.Title>Search for a user</Modal.Title>
-          </Modal.Header>
-          <div className="p-3">
-            <SearchUser />
-          </div>
+        <Modal.Header closeButton>
+            <Modal.Title>Create Content</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <SearchUser />
+        </Modal.Body>
       </Modal>
     </div>
-    
   )
 }

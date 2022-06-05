@@ -12,7 +12,7 @@ export const SearchUser = () => {
 
     const searchResult = useSelector((state) => state.search);
     let pendingUsers = useSelector((state) => state.trip.pendingUsers);
-    pendingUsers = Object.values(pendingUsers[0]);
+    pendingUsers = Object.values(pendingUsers);
     const contents = useSelector((state) => state.content.content);
     const attendees = contents.map(content => content._id);
     const tripId = useSelector((state) => state.trip._id)

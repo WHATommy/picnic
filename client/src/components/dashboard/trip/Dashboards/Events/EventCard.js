@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 
-import { loadContentAttendees } from '../../../../../slices/content';
+import { loadContentAttendees, removeContent, loadAllContent } from '../../../../../slices/content';
 import contentService from "../../../../../services/contentService";
 import { loadPersonalCost, loadTrip } from '../../../../../slices/trip';
 import { loadAttendingContent } from '../../../../../slices/trip';
+import { EventEditModal } from './EventEditModal';
 
 export const EventCard = (props) => {
     const dispatch = useDispatch();
@@ -13,14 +14,16 @@ export const EventCard = (props) => {
     const eventAttendee = useSelector((state) => state.content.attendees);
     const attendee = useSelector((state) => state.trip.attending);
     const isAttendingEvent = attendee.attending.events.find(event => event._id === props.event._id);
+    const ownerId = useSelector((state) => state.trip.owner);
+    const moderators = useSelector((state) => state.trip.moderators);
 
     // Loading state
     const [loading, setLoading] = useState(false);
+    // Loading state
+    const [loadingRemove, setLoadingRemove] = useState(false);
 
     // Modal show state
     const [show, setShow] = useState(false);
-
-
     // Modal toggle
     const handleClose = () => {
         setShow(false);
@@ -29,6 +32,30 @@ export const EventCard = (props) => {
         dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
         e.preventDefault();
         setShow(true);
+    };
+
+    // Modal show state
+    const [showEdit, setShowEdit] = useState(false);
+    // Modal toggle
+    const handleCloseEdit = () => {
+        setShowEdit(false);
+    };
+    const handleShowEdit = (e) => {
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
+        e.preventDefault();
+        setShowEdit(true);
+    };
+
+    // Modal show state
+    const [showRemove, setShowRemove] = useState(false);
+    // Modal toggle
+    const handleCloseRemove = () => {
+        setShowRemove(false);
+    };
+    const handleShowRemove = (e) => {
+        dispatch(loadContentAttendees({ tripId: tripId, contentId: props.event._id, contentType: "event" }));
+        e.preventDefault();
+        setShowRemove(true);
     };
 
     const handleJoin = async () => {
@@ -51,6 +78,18 @@ export const EventCard = (props) => {
         setLoading(false);
     }
 
+    const handleRemove = async () => {
+        setLoadingRemove(true);
+        await dispatch(removeContent({ 
+            tripId: tripId, 
+            contentId: props.event._id, 
+            contentType: "event" 
+        }));
+        await dispatch(loadAllContent({tripId: tripId, contentType: "event"}));
+        await dispatch(loadPersonalCost({tripId: tripId, userId: props.userId}));
+        setLoadingRemove(false);
+    }
+
     const startDate = new Date(props.event.startDate).toLocaleDateString(
         'en-US',
         {
@@ -58,8 +97,8 @@ export const EventCard = (props) => {
         month: 'long',
         day: 'numeric'
         }
-      );
-      const endDate = new Date(props.event.endDate).toLocaleDateString(
+    );
+    const endDate = new Date(props.event.endDate).toLocaleDateString(
         'en-US',
         {
         year: 'numeric',
@@ -67,19 +106,20 @@ export const EventCard = (props) => {
         day: 'numeric'
         }
     );
+
     return (
         <div className="card" style={{width: "18rem"}} key={props.event.name}>
         {props.event.image ? 
             <img
-            className="rounded image-fluid"
-            src={props.event.image.src}
-            alt={props.event.image.title}
+                className="rounded image-fluid"
+                src={props.event.image.src}
+                alt={props.event.image.title}
             />
             :
             <img
-            className="rounded image-fluid"
-            src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/event_y8bwaz.png"
-            alt="default housing"
+                className="rounded image-fluid"
+                src="https://res.cloudinary.com/dkf1fcytw/image/upload/v1652914309/event_y8bwaz.png"
+                alt="default event"
             />
         }
         <div className="card-body">
@@ -110,9 +150,19 @@ export const EventCard = (props) => {
                 }
             </div>
             <div className="col-6 text-end">
-            <button className="btn btn-primary" onClick={handleShow}>Attendees</button>
+                <button className="btn btn-primary" onClick={handleShow}>Attendees</button>
             </div>
         </div>
+        { ((ownerId === props.userId) || (moderators.includes(props.userId))) &&
+            <div className="card-body row">
+                <div className="col-6">
+                    <button className="btn btn-secondary" onClick={handleShowEdit}>Edit</button>
+                </div>
+                <div className="col-6 text-end">
+                    <button className="btn btn-danger" onClick={handleShowRemove}>Remove</button>
+                </div>
+            </div>
+        }
         <Modal
             show={show}
             onHide={handleClose}
@@ -137,6 +187,37 @@ export const EventCard = (props) => {
                 </ul>
             </Modal.Body>
         </Modal>
-        </div> 
+        <Modal
+            show={showEdit}
+            onHide={handleCloseEdit}
+        >
+            <EventEditModal userId={props.userId} event={props.event} tripId={tripId} handleCloseEdit={handleCloseEdit} />
+        </Modal>
+        <Modal
+            show={showRemove}
+            onHide={handleCloseRemove}
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>Remove {props.event.name}?</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <div className="container">
+                    <div className="row">
+                        <div className="col-6">
+                            <button className="btn btn-primary" onClick={handleRemove}>
+                                {loadingRemove && (
+                                    <span className="spinner-border spinner-border-sm"></span>
+                                )}
+                                Confirm
+                            </button>
+                        </div>
+                        <div className="col-6 text-end">
+                            <button className="btn btn-danger" onClick={handleShowRemove}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </Modal.Body>
+        </Modal>
+    </div> 
   )
 }
