@@ -42,11 +42,11 @@ const server = require("http").createServer(app);   // Conjunction with express.
 // Server static assets if in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder
-  app.use(express.static('../client/build'));
+  app.use(express.static(__dirname, "public"));
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
-  });
+  app.get("*", (req, res)=>{
+    res.sendFile(path.join(__dirname, "public", 'index.html'));
+  })
 }
 
 // Server listening on PORT
