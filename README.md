@@ -1,6 +1,5 @@
-# CloudTrip
+# CloudTrip https://cloudtrip.herokuapp.com/
 A platform for users to create and organize trips with other users
-Link: https://cloudtrip.herokuapp.com/
 
 ## Tech Usage
 - React
